@@ -159,4 +159,4 @@ async def listroles(ctx):
     await ctx.send(roleList)
 '''
 #Actually running the damn thing
-client.run('Oh ho ho ho not fooling me again')
+client.run('NDY2Njk1MDc1Nzc1MjUwNDMz.XRPAmQ.VruwIUkRohUn2Sa_HxHR5mby7Fc')

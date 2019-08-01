@@ -159,5 +159,5 @@ async def listroles(ctx):
     await ctx.send(roleList)
 '''
 #Actually running the damn thing
-token = os.environ['BOT_TOKEN']
+token = os.environ.get('BOT_TOKEN')
 client.run(token)

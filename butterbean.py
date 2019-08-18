@@ -132,7 +132,7 @@ async def imnot(ctx, oldRole):
 @client.command()
 async def join(ctx, newRole):
     user = ctx.message.author
-    roleToAdd = discord.utils.get(ctx.guild.roles, name=newRole)
+    roleToAdd = discord.utils.get(ctx.guild.roles, name=newRole.lower())
     lowerDemarc = discord.utils.get(ctx.guild.roles, name='Catillac Cat')
     if roleToAdd >= lowerDemarc:
         await ctx.send("<:rudy:441453959215972352> That's not what this is for.")
@@ -143,7 +143,7 @@ async def join(ctx, newRole):
 @client.command()
 async def leave(ctx, oldRole):
     user = ctx.message.author
-    roleToRemove = discord.utils.get(ctx.guild.roles, name=oldRole)
+    roleToRemove = discord.utils.get(ctx.guild.roles, name=oldRole.lower())
     userRoles = ctx.author.roles
     await user.remove_roles(roleToRemove)
     await ctx.send('{0} is no longer a member of {1}.'.format(user.mention, oldRole))

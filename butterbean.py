@@ -149,7 +149,7 @@ async def leave(ctx, oldRole):
     await ctx.send('{0} is no longer a member of {1}.'.format(user.mention, oldRole))
     if roleToRemove not in userRoles:
         await ctx.send("<:rudy:441453959215972352> You were never in that role.")
-'''   
+  
 @client.command()
 async def listroles(ctx):
     roleList = ''
@@ -157,7 +157,7 @@ async def listroles(ctx):
     for i in roles:
         roleList += " " + str(i) +","
     await ctx.send(roleList)
-'''
+
 #Actually running the damn thing
 
 client.run(os.environ['BOT_TOKEN'])

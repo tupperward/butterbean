@@ -1,13 +1,18 @@
 #Butterbean DiscordBot for WATTBA Discord 
 #author: Tupperward
-#content contributor: Smoltz, Jackapedia
+#content contributors: Smoltz, Jackapedia
 
 #Thank you to Agnes(Smyrna) for providing guidance throughout the whole process
 
 #Importing dependencies
-import discord; import os; import pickle; from bobross import rossQuotes; from bobross import embedRossIcon; import random; import psycopg2; import config
+import discord; import os; import random; import psycopg2
+from bobross import embedRossIcon
+from bobross import rossQuotes
 from discord.ext import commands
 from discord.utils import get
+from config import config
+
+approvedUsers = []
 
 #Intializing functions
 client = commands.Bot(command_prefix='!', description='Butterborg is online.', add=True)
@@ -20,7 +25,8 @@ async def on_ready():
     print('-------')
     print('Resistance is futile.')
 
-conn = psycopg2.connect(dsn)
+params = config()
+conn = psycopg2.connect(**params)
 cur = conn.cursor()
 
 def closeSql():
@@ -37,8 +43,6 @@ async def bb(ctx, arg):
 #Mods can add items to the list
 @client.command()
 async def add(ctx, key, val):
-    namesIn = open('names.pickle','rb')
-    approvedUsers = pickle.load(namesIn)
     if str(ctx.message.author) in approvedUsers:
         cur.execute("INSERT INTO posts VALUES ({0},{1});".format(key,val))
         await ctx.send("%s has been added to my necroborgic memories" % (key))
@@ -50,8 +54,6 @@ async def add(ctx, key, val):
 
 @client.command()
 async def remove (ctx, key):
-    namesIn = open('names.pickle','rb')
-    approvedUsers = pickle.load(namesIn)
     if str(ctx.message.author) in approvedUsers:
         cur.execute("DELETE FROM posts WHERE post_name = %s;"% (key))
         await ctx.send("%s has been purged from my necroborgic memories" % (key))
@@ -63,20 +65,10 @@ async def remove (ctx, key):
 @client.command()
 async def beanfo(ctx):
     #embed = discord.Embed(title='List of commands', color=0xeee657)
-    dictIn = open('dict.pickle','rb')
-    butterBeanDict = pickle.load(dictIn)
-    count = 0
-    necroborgicMemory = ""
-    for memory in butterBeanDict.keys():
-        count += 1
-        if not count % 4 == 0:
-            necroborgicMemory += memory + " "*(20-len(memory)) + ", "
-        else:
-            necroborgicMemory += memory + " "*(20-len(memory)) + "\n"
-    await ctx.send(necroborgicMemory)
-    dictOut = open('dict.pickle','wb')
-    pickle.dump(butterBeanDict, dictOut)
-    dictOut.close()
+    beanfoDict = {}
+    beanfoDict.update(cur.execute('SELECT * FROM posts;'))
+    await ctx.send(beanfoDict)
+    closeSql()
 """
 @client.event
 async def on_member_join( member):

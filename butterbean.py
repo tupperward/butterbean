@@ -5,7 +5,7 @@
 #Thank you to Agnes(Smyrna) for providing guidance throughout the whole process
 
 #Importing dependencies
-import discord; import os; import pickle; from bobross import rossQuotes; from bobross import embedRossIcon; import random; import psycopg2
+import discord; import os; import pickle; from bobross import rossQuotes; from bobross import embedRossIcon; import random; import psycopg2; import config
 from discord.ext import commands
 from discord.utils import get
 
@@ -20,13 +20,19 @@ async def on_ready():
     print('-------')
     print('Resistance is futile.')
 
+conn = psycopg2.connect(dsn)
+cur = conn.cursor()
+
+def closeSql():
+    cur.close()
+    conn.close()
+
 #Message Send with !bb arg
 @client.command()
 async def bb(ctx, arg):
-    dictIn = open('dict.pickle', 'rb')
-    butterBeanDict = pickle.load(dictIn)
-    await ctx.send(butterBeanDict.get(arg))
-    dictIn.close()
+    response = cur.execute("SELECT post_name FROM posts;")
+    await ctx.send(response)
+    closeSql()
 
 #Mods can add items to the list
 @client.command()
@@ -34,36 +40,26 @@ async def add(ctx, key, val):
     namesIn = open('names.pickle','rb')
     approvedUsers = pickle.load(namesIn)
     if str(ctx.message.author) in approvedUsers:
-        dictIn = open('dict.pickle', 'rb')
-        butterBeanDict = pickle.load(dictIn)
-        update = {key : val}
-        butterBeanDict.update(update)
-        dictOut = open('dict.pickle','wb')
-        pickle.dump(butterBeanDict, dictOut)
-        dictOut.close()
+        cur.execute("INSERT INTO posts VALUES ({0},{1});".format(key,val))
         await ctx.send("%s has been added to my necroborgic memories" % (key))
+
     else:
         await ctx.send("Uh uh uh! " + ctx.message.author.mention + " didn't say the magic word!")
         await ctx.send("https://imgur.com/IiaYjzH")
-    namesIn.close()
+    closeSql()
 
 @client.command()
 async def remove (ctx, key):
     namesIn = open('names.pickle','rb')
     approvedUsers = pickle.load(namesIn)
     if str(ctx.message.author) in approvedUsers:
-        dictIn = open('dict.pickle','rb')
-        butterBeanDict = pickle.load(dictIn)
-        del butterBeanDict[key]
-        dictOut = open('dict.pickle','wb')
-        pickle.dump(butterBeanDict, dictOut)
-        dictOut.close()
+        cur.execute("DELETE FROM posts WHERE post_name = %s;"% (key))
         await ctx.send("%s has been purged from my necroborgic memories" % (key))
     else:
         await ctx.send("Uh uh uh! " + ctx.message.author.mention + " didn't say the magic word!")
         await ctx.send("https://imgur.com/IiaYjzH")
-    namesIn.close()
-
+    closeSql()
+"""
 @client.command()
 async def beanfo(ctx):
     #embed = discord.Embed(title='List of commands', color=0xeee657)
@@ -81,7 +77,7 @@ async def beanfo(ctx):
     dictOut = open('dict.pickle','wb')
     pickle.dump(butterBeanDict, dictOut)
     dictOut.close()
-
+"""
 @client.event
 async def on_member_join( member):
     guild = member.guild

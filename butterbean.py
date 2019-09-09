@@ -5,7 +5,7 @@
 #Thank you to Agnes(Smyrna) for providing guidance throughout the whole process
 
 #Importing dependencies
-import discord; import os; import pickle; from bobross import rossQuotes; from bobross import embedRossIcon; import random 
+import discord; import os; import pickle; from bobross import rossQuotes; from bobross import embedRossIcon; import random; import psycopg2
 from discord.ext import commands
 from discord.utils import get
 

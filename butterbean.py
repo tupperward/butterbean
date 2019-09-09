@@ -12,7 +12,7 @@ from discord.ext import commands
 from discord.utils import get
 from config import config
 
-approvedUsers = []
+#approvedUsers = ['iTuna#0209', 'ash#0666', 'Jackapedia#0783', 'LavenderGrooms#8008', 'Tupperward#5115']
 
 #Intializing functions
 client = commands.Bot(command_prefix='!', description='Butterborg is online.', add=True)
@@ -24,6 +24,8 @@ async def on_ready():
     print(client.user.id)
     print('-------')
     print('Resistance is futile.')
+
+DATABASE_URL = os.environ['DATABASE_URL']
 
 params = config()
 conn = psycopg2.connect(**params)
@@ -43,7 +45,9 @@ async def bb(ctx, arg):
 #Mods can add items to the list
 @client.command()
 async def add(ctx, key, val):
-    if str(ctx.message.author) in approvedUsers:
+    check = None
+    check = cur.execute('SELECT %s FROM approved_users;'% ctx.message.author)
+    if check:
         cur.execute("INSERT INTO posts VALUES ({0},{1});".format(key,val))
         await ctx.send("%s has been added to my necroborgic memories" % (key))
 
@@ -53,8 +57,10 @@ async def add(ctx, key, val):
     closeSql()
 
 @client.command()
-async def remove (ctx, key):
-    if str(ctx.message.author) in approvedUsers:
+async def remove (ctx, key): 
+    check = None
+    check = cur.execute('SELECT %s FROM approved_users'% ctx.message.author)
+    if check:
         cur.execute("DELETE FROM posts WHERE post_name = %s;"% (key))
         await ctx.send("%s has been purged from my necroborgic memories" % (key))
     else:

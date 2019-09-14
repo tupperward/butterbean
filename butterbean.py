@@ -10,7 +10,7 @@ from bobross import embedRossIcon
 from bobross import rossQuotes
 from discord.ext import commands
 from discord.utils import get
-from config import config
+from config import config, sanitize
 
 #Intializing functions
 client = commands.Bot(command_prefix='!', description='Butterborg is online.', add=True)
@@ -31,6 +31,8 @@ cur = conn.cursor()
 
 greetMessage = "Welcome to the WATTBA-sistance! Please take your time to observe our rules and, if you're comfortable, use the **!callme** command to tag yourself with your pronouns. Available pronouns are **he/him**, **she/her**, **they/them**, **xe/xem** and **ze/zir** If you get tired of your pronouns you can remove them with **!imnot** \n\n There are several other roles you can **!join** too, like **Streampiggies** to be notified of Eli's streams. Check them out by using **!listroles**. \n\n Oh, and feel free to get an inspirational Bob Ross quote any time with **!bobross**. \n\n This server also uses this bot for meme purposes. Be on the lookout for memes you can send using by sending **!bb** and the name of the meme."
 
+unapprovedDeny = "Uh uh uh! {0} didn't say the magic word!\nhttps://imgur.com/IiaYjzH"
+
 def convertTuple(tup):
     stringFormat = ''.join(tup)
     return stringFormat
@@ -47,10 +49,6 @@ def checkApprovedUsers(user):
     else:
         return False
 
-def unapprovedDeny(user):
-    await ctx.send("Uh uh uh! " + user + " didn't say the magic word!")
-    await ctx.send("https://imgur.com/IiaYjzH")
-
 def closeSql():
     cur.close()
     conn.close()
@@ -59,7 +57,8 @@ def closeSql():
 #Message Send with !bb arg
 @client.command()
 async def bb(ctx, arg):
-    cur.execute("SELECT post_name FROM posts;")
+    call = ctx.message
+    cur.execute("SELECT * FROM posts WHERE post_name LIKE {0};".format(call.lower().strip()))
     response = cur.fetchone()
     await ctx.send(response)
     closeSql()
@@ -68,22 +67,25 @@ async def bb(ctx, arg):
 @client.command()
 async def add(ctx, key, val):
     if checkApprovedUsers(ctx.message.author):
+        key = key.sanitize()
+        val = val.sanitize()
         cur.execute("INSERT INTO posts VALUES ({0},{1});".format(key,val))
         conn.commit()
         await ctx.send("%s has been added to my necroborgic memories" % (key))
     else:
-        unapprovedDeny(ctx.message.author)
+        await ctx.send(unapprovedDeny.format(ctx.message.author))
     closeSql()
 
 #Mods can remove items from the list
 @client.command()
 async def remove (ctx, key): 
     if checkApprovedUsers(ctx.message.author):
+        key = key.sanitize()
         cur.execute("DELETE FROM posts WHERE post_name = %s;"% (key))
         conn.commit()
         await ctx.send("%s has been purged from my necroborgic memories" % (key))
     else:
-        unapprovedDeny(ctx.message.author)
+        await ctx.send(unapprovedDeny.format(ctx.message.author))
     closeSql()
 
 #Lists all meme commands
@@ -104,7 +106,6 @@ async def on_member_join( member):
     if guild.system_channel is not None:
         eMessage = discord.Embed(description="{0.mention}! {1}".format(member, greetMessage))
         await guild.system_channel.send(embed=eMessage)
-
 
 #If needed, will resend the welcome message
 @client.command()

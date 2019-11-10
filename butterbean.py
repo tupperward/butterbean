@@ -23,7 +23,7 @@ async def on_ready():
     print('-------')
     print('Resistance is futile.')
 
-DATABASE_URL = os.environ['DATABASE_URL']
+#DATABASE_URL = os.environ['DATABASE_URL']
 
 params = config()
 conn = psycopg2.connect(**params)
@@ -37,8 +37,8 @@ def convertTuple(tup):
     stringFormat = ''.join(tup)
     return stringFormat
 
-def checkApprovedUsers(user):
-    cur.execute("SELECT * FROM approved_users;")
+async def checkApprovedUsers(user):
+    await cur.execute("SELECT * FROM approved_users;")
     check = cur.fetchall()
     results = []
     for entry in check:
@@ -49,54 +49,45 @@ def checkApprovedUsers(user):
     else:
         return False
 
-def closeSql():
-    cur.close()
-    conn.close()
-
 # ---------------- Meme Management ----------------
 #Message Send with !bb arg
 @client.command()
 async def bb(ctx, arg):
-    call = ctx.message
-    cur.execute("SELECT * FROM posts WHERE post_name LIKE {0};".format(call.lower().strip()))
+    print (ctx.message.content)
+    await cur.execute("SELECT link FROM posts WHERE post_name LIKE '%s';"%  ctx.message.content)
     response = cur.fetchone()
-    await ctx.send(response)
-    closeSql()
+    message = response[0]
+    
+    await ctx.send(message)
 
 #Mods can add items to the list
 @client.command()
 async def add(ctx, key, val):
     if checkApprovedUsers(ctx.message.author):
-        key = key.sanitize()
-        val = val.sanitize()
-        cur.execute("INSERT INTO posts VALUES ({0},{1});".format(key,val))
-        conn.commit()
+        await cur.execute("INSERT INTO posts VALUES ('{0}','{1}');".format(key,val))
+        await conn.commit()
         await ctx.send("%s has been added to my necroborgic memories" % (key))
     else:
         await ctx.send(unapprovedDeny.format(ctx.message.author))
-    closeSql()
 
 #Mods can remove items from the list
 @client.command()
 async def remove (ctx, key): 
     if checkApprovedUsers(ctx.message.author):
-        key = key.sanitize()
-        cur.execute("DELETE FROM posts WHERE post_name = %s;"% (key))
-        conn.commit()
+        await cur.execute("DELETE FROM posts WHERE post_name LIKE '%s';"% (key))
+        await conn.commit()
         await ctx.send("%s has been purged from my necroborgic memories" % (key))
     else:
         await ctx.send(unapprovedDeny.format(ctx.message.author))
-    closeSql()
 
 #Lists all meme commands
 @client.command()
 async def beanfo(ctx):
     #embed = discord.Embed(title='List of commands', color=0xeee657)
     beanfoDict = {}
-    cur.execute('SELECT * FROM posts;')
+    await cur.execute('SELECT * FROM posts;')
     beanfoDict.update(cur.fetchall())
     await ctx.send(beanfoDict)
-    closeSql()
 
 # ---------------- New Member Welcome ----------------
 #Welcomes a new member

@@ -38,45 +38,61 @@ def convertTuple(tup):
     return stringFormat
 
 async def checkApprovedUsers(user):
-    await cur.execute("SELECT * FROM approved_users;")
-    check = cur.fetchall()
-    results = []
-    for entry in check:
-        formatted = convertTuple(entry)
-        results.append(formatted)
-    if user in results:
+    lookupString = "SELECT username FROM approved_users WHERE username LIKE  '%{}%';".format(user)
+    cur.execute(lookupString)
+    check = cur.fetchone()
+    if not check is None:
         return True
-    else:
-        return False
 
 # ---------------- Meme Management ----------------
 #Message Send with !bb arg
 @client.command()
 async def bb(ctx, arg):
-    print (ctx.message.content)
-    await cur.execute("SELECT link FROM posts WHERE post_name LIKE '%s';"%  ctx.message.content)
+    params = config()
+    conn = psycopg2.connect(**params)
+    cur = conn.cursor()
+
+    search = arg
+    lookupString = "SELECT link FROM posts WHERE post_name LIKE '%{}%';".format(search)
+    cur.execute(lookupString)
     response = cur.fetchone()
-    message = response[0]
-    
-    await ctx.send(message)
+    conn.close()
+    if response is None:
+        await ctx.send("Sorry, this command doesn't exist.")
+    else:
+        split = response[0].replace("'",'')
+        await ctx.send(split)
 
 #Mods can add items to the list
 @client.command()
 async def add(ctx, key, val):
-    if checkApprovedUsers(ctx.message.author):
-        await cur.execute("INSERT INTO posts VALUES ('{0}','{1}');".format(key,val))
-        await conn.commit()
-        await ctx.send("%s has been added to my necroborgic memories" % (key))
+    params = config()
+    conn = psycopg2.connect(**params)
+    cur = conn.cursor()
+
+    if await checkApprovedUsers(ctx.message.author):
+        lookupString = "INSERT INTO posts VALUES ('{0}','{1}');".format(key,val)
+        cur.execute(lookupString)
+        conn.commit()
+        conn.close()
+        await ctx.send("{} has been added to my necroborgic memories".format(key))
     else:
         await ctx.send(unapprovedDeny.format(ctx.message.author))
 
 #Mods can remove items from the list
 @client.command()
 async def remove (ctx, key): 
-    if checkApprovedUsers(ctx.message.author):
-        await cur.execute("DELETE FROM posts WHERE post_name LIKE '%s';"% (key))
-        await conn.commit()
-        await ctx.send("%s has been purged from my necroborgic memories" % (key))
+    params = config()
+    conn = psycopg2.connect(**params)
+    cur = conn.cursor()
+
+    if await checkApprovedUsers(ctx.message.author):
+
+        lookupString = "DELETE FROM posts WHERE post_name LIKE '%{}%';".format(key)
+        cur.execute(lookupString)
+        conn.commit()
+        conn.close()
+        await ctx.send("{} has been purged from my necroborgic memories".format(key))
     else:
         await ctx.send(unapprovedDeny.format(ctx.message.author))
 
@@ -84,10 +100,13 @@ async def remove (ctx, key):
 @client.command()
 async def beanfo(ctx):
     #embed = discord.Embed(title='List of commands', color=0xeee657)
-    beanfoDict = {}
-    await cur.execute('SELECT * FROM posts;')
-    beanfoDict.update(cur.fetchall())
-    await ctx.send(beanfoDict)
+    params = config()
+    conn = psycopg2.connect(**params)
+    cur = conn.cursor()
+    
+    info = cur.execute('SELECT post_name FROM posts;')
+    conn.close()
+    await ctx.send(info)
 
 # ---------------- New Member Welcome ----------------
 #Welcomes a new member

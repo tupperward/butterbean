@@ -1,13 +1,16 @@
 #Butterbean DiscordBot for WATTBA Discord 
 #author: Tupperward
-#content contributor: Smoltz, Jackapedia
+#content contributors: Smoltz, Jackapedia
 
 #Thank you to Agnes(Smyrna) for providing guidance throughout the whole process
 
 #Importing dependencies
-import discord; import os; import pickle; from bobross import rossQuotes; from bobross import embedRossIcon; import random; import psycopg2
+import discord; import os; import random; import psycopg2
+from bobross import embedRossIcon
+from bobross import rossQuotes
 from discord.ext import commands
 from discord.utils import get
+from config import config, sanitize
 
 #Intializing functions
 client = commands.Bot(command_prefix='!', description='Butterborg is online.', add=True)
@@ -20,80 +23,107 @@ async def on_ready():
     print('-------')
     print('Resistance is futile.')
 
+#DATABASE_URL = os.environ['DATABASE_URL']
+
+params = config()
+conn = psycopg2.connect(**params)
+cur = conn.cursor()
+
+greetMessage = "Welcome to the WATTBA-sistance! Please take your time to observe our rules and, if you're comfortable, use the **!callme** command to tag yourself with your pronouns. Available pronouns are **he/him**, **she/her**, **they/them**, **xe/xem** and **ze/zir** If you get tired of your pronouns you can remove them with **!imnot** \n\n There are several other roles you can **!join** too, like **Streampiggies** to be notified of Eli's streams. Check them out by using **!listroles**. \n\n Oh, and feel free to get an inspirational Bob Ross quote any time with **!bobross**. \n\n This server also uses this bot for meme purposes. Be on the lookout for memes you can send using by sending **!bb** and the name of the meme."
+
+unapprovedDeny = "Uh uh uh! {0} didn't say the magic word!\nhttps://imgur.com/IiaYjzH"
+
+def convertTuple(tup):
+    stringFormat = ''.join(tup)
+    return stringFormat
+
+async def checkApprovedUsers(user):
+    lookupString = "SELECT username FROM approved_users WHERE username LIKE  '%{}%';".format(user)
+    cur.execute(lookupString)
+    check = cur.fetchone()
+    if not check is None:
+        return True
+
+# ---------------- Meme Management ----------------
 #Message Send with !bb arg
 @client.command()
 async def bb(ctx, arg):
-    dictIn = open('dict.pickle', 'rb')
-    butterBeanDict = pickle.load(dictIn)
-    await ctx.send(butterBeanDict.get(arg))
-    dictIn.close()
+    params = config()
+    conn = psycopg2.connect(**params)
+    cur = conn.cursor()
+
+    search = arg
+    lookupString = "SELECT link FROM posts WHERE post_name LIKE '%{}%';".format(search)
+    cur.execute(lookupString)
+    response = cur.fetchone()
+    conn.close()
+    if response is None:
+        await ctx.send("Sorry, this command doesn't exist.")
+    else:
+        split = response[0].replace("'",'')
+        await ctx.send(split)
 
 #Mods can add items to the list
 @client.command()
 async def add(ctx, key, val):
-    namesIn = open('names.pickle','rb')
-    approvedUsers = pickle.load(namesIn)
-    if str(ctx.message.author) in approvedUsers:
-        dictIn = open('dict.pickle', 'rb')
-        butterBeanDict = pickle.load(dictIn)
-        update = {key : val}
-        butterBeanDict.update(update)
-        dictOut = open('dict.pickle','wb')
-        pickle.dump(butterBeanDict, dictOut)
-        dictOut.close()
-        await ctx.send("%s has been added to my necroborgic memories" % (key))
-    else:
-        await ctx.send("Uh uh uh! " + ctx.message.author.mention + " didn't say the magic word!")
-        await ctx.send("https://imgur.com/IiaYjzH")
-    namesIn.close()
+    params = config()
+    conn = psycopg2.connect(**params)
+    cur = conn.cursor()
 
+    if await checkApprovedUsers(ctx.message.author):
+        lookupString = "INSERT INTO posts VALUES ('{0}','{1}');".format(key,val)
+        cur.execute(lookupString)
+        conn.commit()
+        conn.close()
+        await ctx.send("{} has been added to my necroborgic memories".format(key))
+    else:
+        await ctx.send(unapprovedDeny.format(ctx.message.author))
+
+#Mods can remove items from the list
 @client.command()
-async def remove (ctx, key):
-    namesIn = open('names.pickle','rb')
-    approvedUsers = pickle.load(namesIn)
-    if str(ctx.message.author) in approvedUsers:
-        dictIn = open('dict.pickle','rb')
-        butterBeanDict = pickle.load(dictIn)
-        del butterBeanDict[key]
-        dictOut = open('dict.pickle','wb')
-        pickle.dump(butterBeanDict, dictOut)
-        dictOut.close()
-        await ctx.send("%s has been purged from my necroborgic memories" % (key))
-    else:
-        await ctx.send("Uh uh uh! " + ctx.message.author.mention + " didn't say the magic word!")
-        await ctx.send("https://imgur.com/IiaYjzH")
-    namesIn.close()
+async def remove (ctx, key): 
+    params = config()
+    conn = psycopg2.connect(**params)
+    cur = conn.cursor()
 
+    if await checkApprovedUsers(ctx.message.author):
+
+        lookupString = "DELETE FROM posts WHERE post_name LIKE '%{}%';".format(key)
+        cur.execute(lookupString)
+        conn.commit()
+        conn.close()
+        await ctx.send("{} has been purged from my necroborgic memories".format(key))
+    else:
+        await ctx.send(unapprovedDeny.format(ctx.message.author))
+
+#Lists all meme commands
 @client.command()
 async def beanfo(ctx):
     #embed = discord.Embed(title='List of commands', color=0xeee657)
-    dictIn = open('dict.pickle','rb')
-    butterBeanDict = pickle.load(dictIn)
-    count = 0
-    necroborgicMemory = ""
-    for memory in butterBeanDict.keys():
-        count += 1
-        if not count % 4 == 0:
-            necroborgicMemory += memory + " "*(20-len(memory)) + ", "
-        else:
-            necroborgicMemory += memory + " "*(20-len(memory)) + "\n"
-    await ctx.send(necroborgicMemory)
-    dictOut = open('dict.pickle','wb')
-    pickle.dump(butterBeanDict, dictOut)
-    dictOut.close()
+    params = config()
+    conn = psycopg2.connect(**params)
+    cur = conn.cursor()
+    
+    info = cur.execute('SELECT post_name FROM posts;')
+    conn.close()
+    await ctx.send(info)
 
+# ---------------- New Member Welcome ----------------
+#Welcomes a new member
 @client.event
 async def on_member_join( member):
     guild = member.guild
     if guild.system_channel is not None:
-        eMessage = discord.Embed(description="{0.mention}! Welcome to the WATTBA-sistance! Please take your time to observe our rules and, if you're comfortable, use the **!callme** command to tag yourself with your pronouns. Available pronouns are **he/him**, **she/her**, **they/them**, **xe/xem** and **ze/zir** If you get tired of your pronouns you can remove them with **!imnot** \n\n There are several other roles you can **!join** too, like **Streampiggies** to be notified of Eli's streams. Check them out by using **!listroles**. \n\n Oh, and feel free to get an inspirational Bob Ross quote any time with **!bobross**.".format(member))
+        eMessage = discord.Embed(description="{0.mention}! {1}".format(member, greetMessage))
         await guild.system_channel.send(embed=eMessage)
 
+#If needed, will resend the welcome message
 @client.command()
 async def resend(ctx):
-    eMessage = discord.Embed(description="Welcome to the WATTBA-sistance! Please take your time to observe our rules and, if you're comfortable, use the **!callme** command to tag yourself with your pronouns. Available pronouns are **he/him**, **she/her**, **they/them**, **xe/xem** and **ze/zir** If you get tired of your pronouns you can remove them with **!imnot** \n\n There are several other roles you can **!join** too, like **Streampiggies** to be notified of Eli's streams. Check them out by using **!listroles**. \n\n Oh, and feel free to get an inspirational Bob Ross quote any time with **!bobross**.")
+    eMessage = discord.Embed(description="{0}".format(greetMessage))
     await ctx.send(embed=eMessage)
 
+#Bob Ross quote
 @client.command()
 async def bobross (ctx):
 # Posts quotes of Bob Ross
@@ -103,7 +133,8 @@ async def bobross (ctx):
     e.set_author(name="Bob Ross", icon_url=embedRossIcon)
     await ctx.send(embed=e)
 
-#Role management functions
+#---------------- Role management functions ----------------
+#Adds a pronoun specific role
 @client.command()
 async def callme (ctx, genderName):
     user = ctx.message.author
@@ -118,7 +149,8 @@ async def callme (ctx, genderName):
         if genderId not in userRoles:
             await user.add_roles(genderId)
             await ctx.send('<:heathsalute:482273509951799296> Comrade {0} wants to be called {1}.'.format(user.mention, genderName))
-          
+
+#Removes a pronoun specific role          
 @client.command()
 async def imnot(ctx, oldRole):
     user = ctx.message.author
@@ -129,6 +161,7 @@ async def imnot(ctx, oldRole):
     if roleToRemove not in userRoles:
         await ctx.send("<:rudy:441453959215972352> You never picked those pronouns.")
 
+#Adds a non-pronoun specific role
 @client.command()
 async def join(ctx, newRole):
     user = ctx.message.author
@@ -140,6 +173,7 @@ async def join(ctx, newRole):
         await user.add_roles(roleToAdd)
         await ctx.send('<:heathsalute:482273509951799296> {0} has joined {1}!'.format(user.mention, newRole))
 
+#Removes a non-pronoun specific role
 @client.command()
 async def leave(ctx, oldRole):
     user = ctx.message.author
@@ -149,15 +183,15 @@ async def leave(ctx, oldRole):
     await ctx.send('{0} is no longer a member of {1}.'.format(user.mention, oldRole))
     if roleToRemove not in userRoles:
         await ctx.send("<:rudy:441453959215972352> You were never in that role.")
-  
+
+#Lists unformatted all roles.  
 @client.command()
 async def listroles(ctx):
-    roleList = ''
+    rolesStr = ''
     roles = ctx.guild.roles
     for i in roles:
-        roleList += " " + str(i) +","
-    await ctx.send(roleList)
+        rolesStr += " " + str(i) +","
+    await ctx.send(rolesStr)
 
 #Actually running the damn thing
-
 client.run(os.environ['BOT_TOKEN'])

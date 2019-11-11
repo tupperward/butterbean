@@ -33,9 +33,9 @@ greetMessage = "Welcome to the WATTBA-sistance! Please take your time to observe
 
 unapprovedDeny = "Uh uh uh! {0} didn't say the magic word!\nhttps://imgur.com/IiaYjzH"
 
-def convertTuple(tup):
-    stringFormat = ''.join(tup)
-    return stringFormat
+def listToString(s):
+    str1 = " "
+    return (str1.join(s).replace(" ", ", "))
 
 async def checkApprovedUsers(user):
     lookupString = "SELECT username FROM approved_users WHERE username LIKE  '%{}%';".format(user)
@@ -104,9 +104,16 @@ async def beanfo(ctx):
     conn = psycopg2.connect(**params)
     cur = conn.cursor()
     
-    info = cur.execute('SELECT post_name FROM posts;')
+    cur.execute('SELECT post_name FROM posts;')
+    info = cur.fetchall()
+    print (type(info))
+    finalList = []
+    for i in info:
+        finalList.append(i[0].replace("'",''))
+    print(listToString(finalList))
+
     conn.close()
-    await ctx.send(info)
+    await ctx.send(listToString(finalList))
 
 # ---------------- New Member Welcome ----------------
 #Welcomes a new member

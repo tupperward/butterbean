@@ -106,11 +106,9 @@ async def beanfo(ctx):
     
     cur.execute('SELECT post_name FROM posts;')
     info = cur.fetchall()
-    print (type(info))
     finalList = []
     for i in info:
         finalList.append(i[0].replace("'",''))
-    print(listToString(finalList))
 
     conn.close()
     await ctx.send(listToString(finalList))

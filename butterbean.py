@@ -52,7 +52,7 @@ async def bb(ctx, arg):
     conn = psycopg2.connect(**params)
     cur = conn.cursor()
 
-    search = arg
+    search = arg.lower()
     lookupString = "SELECT link FROM posts WHERE post_name LIKE '%{}%';".format(search)
     cur.execute(lookupString)
     response = cur.fetchone()
@@ -69,6 +69,7 @@ async def add(ctx, key, val):
     params = config()
     conn = psycopg2.connect(**params)
     cur = conn.cursor()
+    key = key.lower()
 
     if await checkApprovedUsers(ctx.message.author):
         lookupString = "INSERT INTO posts VALUES ('{0}','{1}');".format(key,val)
@@ -85,6 +86,7 @@ async def remove (ctx, key):
     params = config()
     conn = psycopg2.connect(**params)
     cur = conn.cursor()
+    key = key.lower()
 
     if await checkApprovedUsers(ctx.message.author):
 

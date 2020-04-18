@@ -157,7 +157,7 @@ async def makePitch():
         e = discord.Embed(description=pitch)
         e.set_author(name="Bovonto Bot", icon_url=bovonto.embedBovontoIcon)
         await setChannel.send(embed=e)
-        await asyncio.sleep(random.randrange(360,43200))
+        await asyncio.sleep(random.randrange(360,43200/2))
 
 #---------------- Role management functions ----------------
 #Adds a pronoun specific role

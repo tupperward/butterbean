@@ -147,15 +147,11 @@ async def bobross (ctx):
 async def makePitch():
     await client.wait_until_ready()
     channelChoices = [465938202503413771,465991265557676054,644678362413006909,465950091044454411,466672962506981406]
-    print('Step one')
 
     while client.is_ready:
         cycleChannels = random.randrange(len(channelChoices))
-        print(cycleChannels)
         targetChannel = channelChoices[cycleChannels]
-        print('Step two')
         setChannel = client.get_channel(targetChannel)
-        print(targetChannel)
         rand_c = random.randint(0, len(bovonto.pitches) -1)
         pitch = bovonto.pitches[rand_c]
         e = discord.Embed(description=pitch)

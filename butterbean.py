@@ -33,10 +33,14 @@ greetMessage = "Welcome to the WATTBA-sistance! Please take your time to observe
 timeyIcon = 'https://i.imgur.com/vtkIVnl.png'
 unapprovedDeny = "Uh uh uh! {0} didn't say the magic word!\nhttps://imgur.com/IiaYjzH.gif"
 
+
+#---------------- Helper functions ----------------
+#Cleans up returned values from databases
 def listToString(s):
     str1 = " "
     return (str1.join(s).replace(" ", ", "))
 
+#Checks to determine if user is approved to add/remove to Butterbean
 async def checkApprovedUsers(user):
     lookupString = "SELECT username FROM approved_users WHERE username LIKE  '%{}%';".format(user)
     cur.execute(lookupString)
@@ -44,9 +48,10 @@ async def checkApprovedUsers(user):
     if not check is None:
         return True
 
+#Helper function that selects a random line and sets the name and embed icon for one of the quote functions
 def pickRandomLine(name, icon, lines):
-    rand_c = random.randint(0, len(lines) - 1)
-    line = lines[rand_c]
+    randLine = random.randint(0, len(lines) - 1)
+    line = lines[randLine]
     e = discord.Embed(description=line)
     e.set_author(name=name, icon_url=icon)
     return e
@@ -108,7 +113,6 @@ async def remove (ctx, key):
 #Lists all meme commands
 @client.command()
 async def beanfo(ctx):
-    #embed = discord.Embed(title='List of commands', color=0xeee657)
     params = config()
     conn = psycopg2.connect(**params)
     cur = conn.cursor()
@@ -140,23 +144,30 @@ async def resend(ctx):
     eMessage.set_author(name='Timey', icon_url=timeyIcon)
     await ctx.send(embed=eMessage)
 
+
+
 #Bob Ross quote
 @client.command()
 async def bobross (ctx):
 # Posts quotes of Bob Ross
     await ctx.send(embed=pickRandomLine(name='Bob Ross',icon=embedRossIcon, lines= rossQuotes))
 
+#Bovonto Pitch
 async def makePitch():
+    #Sets up status as ready
     await client.wait_until_ready()
+    #Defines channels to send to (TOKENIZE THIS ASAP)
     channelChoices = [465938202503413771,465991265557676054,644678362413006909,465950091044454411,466672962506981406]
 
+    #Loops through and chooses channels to send pitch to
     while client.is_ready:
         cycleChannels = random.randrange(len(channelChoices))
         targetChannel = channelChoices[cycleChannels]
         setChannel = client.get_channel(targetChannel)
         await setChannel.send(embed=pickRandomLine(name='Bovonto Bot', icon= embedBovontoIcon, lines=pitches))
-        await asyncio.sleep(random.randrange(360,43200/2))
+        await asyncio.sleep(random.randrange(360,14400))
 
+#Just sends a damn Bovonto pitch
 @client.command()
 async def bovonto (ctx):
     await ctx.send(embed=pickRandomLine(name='Bovonto Bot',icon=embedBovontoIcon,lines=pitches))
@@ -167,6 +178,7 @@ async def bovonto (ctx):
 async def callme (ctx, genderName):
     user = ctx.message.author
     genderId = discord.utils.get(ctx.guild.roles, name=genderName)
+    #This checks the list of roles on the server and the order they're in. Do not fuck with the order on the server or this will fuck up.
     upperDemarc = discord.utils.get(ctx.guild.roles, name='he/him'); lowerDemarc = discord.utils.get(ctx.guild.roles, name='Catillac Cat')
     if genderId > upperDemarc or genderId <= lowerDemarc:
         await ctx.send('<:rudy:441453959215972352> Oooooh, {0} isn\'t as sneaky as they think they are. '.format(user.mention))
@@ -221,6 +233,7 @@ async def listroles(ctx):
         rolesStr += " " + str(i) +","
     await ctx.send(rolesStr)
 
+#Creates a looped task to execute the Bovonto pitches regularly
 client.loop.create_task(makePitch())
 
 #Actually running the damn thing

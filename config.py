@@ -9,7 +9,3 @@ def config():
     }
 
     return db
-
-def sanitize(arg):
-    formattedStr = arg.lower().strip()
-    return formattedStr

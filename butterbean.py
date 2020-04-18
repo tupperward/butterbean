@@ -5,12 +5,13 @@
 #Thank you to Agnes(Smyrna) for providing guidance throughout the whole process
 
 #Importing dependencies
-import discord; import os; import random; import psycopg2
+import discord; import os; import random; import psycopg2; import asyncio
 from bobross import embedRossIcon
 from bobross import rossQuotes
-from discord.ext import commands
+from discord.ext import commands, tasks
 from discord.utils import get
-from config import config, sanitize
+from config import config
+import bovonto
 
 #Intializing functions
 client = commands.Bot(command_prefix='!', description='Butterborg is online.', add=True)
@@ -30,8 +31,8 @@ conn = psycopg2.connect(**params)
 cur = conn.cursor()
 
 greetMessage = "Welcome to the WATTBA-sistance! Please take your time to observe our rules and, if you're comfortable, use the **!callme** command to tag yourself with your pronouns. Available pronouns are **!callme he/him**, **!callme she/her**, **!callme they/them**, **!callme xe/xem** and **!callme ze/zir** If you get tired of your pronouns you can remove them with **!imnot** \n\n There are several other roles you can **!join** too, like **!join streampiggies** to be notified of Eli's streams. Check them out by using **!listroles**. \n\n Oh, and feel free to get an inspirational Bob Ross quote any time with **!bobross**. \n\n This server also uses this bot for meme purposes. Be on the lookout for memes you can send using by sending **!bb** and the name of the meme. You can find a list of those memes with **!beanfo**"
-
-unapprovedDeny = "Uh uh uh! {0} didn't say the magic word!\nhttps://imgur.com/IiaYjzH"
+timeyIcon = 'https://i.imgur.com/vtkIVnl.png'
+unapprovedDeny = "Uh uh uh! {0} didn't say the magic word!\nhttps://imgur.com/IiaYjzH.gif"
 
 def listToString(s):
     str1 = " "
@@ -123,12 +124,14 @@ async def on_member_join( member):
     guild = member.guild
     if guild.system_channel is not None:
         eMessage = discord.Embed(description="{0.mention}! {1}".format(member, greetMessage))
+        eMessage.set_author(name='Timey', icon_url=timeyIcon)
         await guild.system_channel.send(embed=eMessage)
 
 #If needed, will resend the welcome message
 @client.command()
 async def resend(ctx):
     eMessage = discord.Embed(description="{0}".format(greetMessage))
+    eMessage.set_author(name='Timey', icon_url=timeyIcon)
     await ctx.send(embed=eMessage)
 
 #Bob Ross quote
@@ -140,6 +143,25 @@ async def bobross (ctx):
     e = discord.Embed(description=quote)
     e.set_author(name="Bob Ross", icon_url=embedRossIcon)
     await ctx.send(embed=e)
+
+async def makePitch():
+    await client.wait_until_ready()
+    channelChoices = [465938202503413771,465991265557676054,644678362413006909,465950091044454411,466672962506981406]
+    print('Step one')
+
+    while client.is_ready:
+        cycleChannels = random.randrange(len(channelChoices))
+        print(cycleChannels)
+        targetChannel = channelChoices[cycleChannels]
+        print('Step two')
+        setChannel = client.get_channel(targetChannel)
+        print(targetChannel)
+        rand_c = random.randint(0, len(bovonto.pitches) -1)
+        pitch = bovonto.pitches[rand_c]
+        e = discord.Embed(description=pitch)
+        e.set_author(name="Bovonto Bot", icon_url=bovonto.embedBovontoIcon)
+        await setChannel.send(embed=e)
+        await asyncio.sleep(random.randrange(360,43200))
 
 #---------------- Role management functions ----------------
 #Adds a pronoun specific role
@@ -200,6 +222,8 @@ async def listroles(ctx):
     for i in roles:
         rolesStr += " " + str(i) +","
     await ctx.send(rolesStr)
+
+client.loop.create_task(makePitch())
 
 #Actually running the damn thing
 client.run(os.environ['BOT_TOKEN'])

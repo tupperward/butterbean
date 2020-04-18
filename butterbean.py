@@ -6,12 +6,11 @@
 
 #Importing dependencies
 import discord; import os; import random; import psycopg2; import asyncio
-from bobross import embedRossIcon
-from bobross import rossQuotes
+from bobross import rossQuotes, embedRossIcon
 from discord.ext import commands, tasks
 from discord.utils import get
 from config import config
-import bovonto
+from bovonto import embedBovontoIcon, pitches
 
 #Intializing functions
 client = commands.Bot(command_prefix='!', description='Butterborg is online.', add=True)
@@ -44,6 +43,13 @@ async def checkApprovedUsers(user):
     check = cur.fetchone()
     if not check is None:
         return True
+
+def pickRandomLine(name, icon, lines):
+    rand_c = random.randint(0, len(lines) - 1)
+    line = lines[rand_c]
+    e = discord.Embed(description=line)
+    e.set_author(name=name, icon_url=icon)
+    return e
 
 # ---------------- Meme Management ----------------
 #Message Send with !bb arg
@@ -138,26 +144,23 @@ async def resend(ctx):
 @client.command()
 async def bobross (ctx):
 # Posts quotes of Bob Ross
-    rand_c = random.randint(0, len(rossQuotes) - 1)
-    quote = rossQuotes[rand_c]
-    e = discord.Embed(description=quote)
-    e.set_author(name="Bob Ross", icon_url=embedRossIcon)
-    await ctx.send(embed=e)
+    await ctx.send(embed=pickRandomLine(name='Bob Ross',icon=embedRossIcon, lines= rossQuotes))
 
 async def makePitch():
     await client.wait_until_ready()
-    channelChoices = [465938202503413771,465991265557676054,644678362413006909,465950091044454411,466672962506981406]
+    #channelChoices = [465938202503413771,465991265557676054,644678362413006909,465950091044454411,466672962506981406]
+    channelChoices = [557368465116233740,700909286196248626]
 
     while client.is_ready:
         cycleChannels = random.randrange(len(channelChoices))
         targetChannel = channelChoices[cycleChannels]
         setChannel = client.get_channel(targetChannel)
-        rand_c = random.randint(0, len(bovonto.pitches) -1)
-        pitch = bovonto.pitches[rand_c]
-        e = discord.Embed(description=pitch)
-        e.set_author(name="Bovonto Bot", icon_url=bovonto.embedBovontoIcon)
-        await setChannel.send(embed=e)
+        await setChannel.send(embed=pickRandomLine(name='Bovonto Bot', icon= embedBovontoIcon, lines=pitches))
         await asyncio.sleep(random.randrange(360,43200/2))
+
+@client.command()
+async def bovonto (ctx):
+    await ctx.send(embed=pickRandomLine(name='Bovonto Bot',icon=embedBovontoIcon,lines=pitches))
 
 #---------------- Role management functions ----------------
 #Adds a pronoun specific role

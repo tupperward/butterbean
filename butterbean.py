@@ -148,8 +148,7 @@ async def bobross (ctx):
 
 async def makePitch():
     await client.wait_until_ready()
-    #channelChoices = [465938202503413771,465991265557676054,644678362413006909,465950091044454411,466672962506981406]
-    channelChoices = [557368465116233740,700909286196248626]
+    channelChoices = [465938202503413771,465991265557676054,644678362413006909,465950091044454411,466672962506981406]
 
     while client.is_ready:
         cycleChannels = random.randrange(len(channelChoices))

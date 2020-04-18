@@ -145,7 +145,7 @@ async def resend(ctx):
     await ctx.send(embed=eMessage)
 
 
-
+# ---------------- Sending random messages ----------------
 #Bob Ross quote
 @client.command()
 async def bobross (ctx):

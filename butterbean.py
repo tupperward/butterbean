@@ -10,7 +10,10 @@ from bobross import rossQuotes, embedRossIcon
 from discord.ext import commands, tasks
 from discord.utils import get
 from config import config
-from bovonto import embedBovontoIcon, pitches
+from bovonto import embedBovontoIcon, pitches, makePitch, pickRandomLine
+
+#-----------Buttons!-----------#
+bovontoSchedule = False
 
 #Intializing functions
 client = commands.Bot(command_prefix='!', description='Butterborg is online.', add=True)
@@ -48,13 +51,6 @@ async def checkApprovedUsers(user):
     if not check is None:
         return True
 
-#Helper function that selects a random line and sets the name and embed icon for one of the quote functions
-def pickRandomLine(name, icon, lines):
-    randLine = random.randint(0, len(lines) - 1)
-    line = lines[randLine]
-    e = discord.Embed(description=line)
-    e.set_author(name=name, icon_url=icon)
-    return e
 
 # ---------------- Meme Management ----------------
 #Message Send with !bb arg
@@ -152,20 +148,7 @@ async def bobross (ctx):
 # Posts quotes of Bob Ross
     await ctx.send(embed=pickRandomLine(name='Bob Ross',icon=embedRossIcon, lines= rossQuotes))
 
-#Bovonto Pitch
-async def makePitch():
-    #Sets up status as ready
-    await client.wait_until_ready()
-    #Defines channels to send to (TOKENIZE THIS ASAP)
-    channelChoices = [465938202503413771,465991265557676054,644678362413006909,465950091044454411,466672962506981406]
 
-    #Loops through and chooses channels to send pitch to
-    while client.is_ready:
-        cycleChannels = random.randrange(len(channelChoices))
-        targetChannel = channelChoices[cycleChannels]
-        setChannel = client.get_channel(targetChannel)
-        await setChannel.send(embed=pickRandomLine(name='Bovonto Bot', icon= embedBovontoIcon, lines=pitches))
-        await asyncio.sleep(random.randrange(360,14400))
 
 #Just sends a damn Bovonto pitch
 @client.command()
@@ -234,7 +217,8 @@ async def listroles(ctx):
     await ctx.send(rolesStr)
 
 #Creates a looped task to execute the Bovonto pitches regularly
-client.loop.create_task(makePitch())
+while bovontoSchedule == True:
+   client.loop.create_task(makePitch())
 
 #Actually running the damn thing
 client.run(os.environ['BOT_TOKEN'])

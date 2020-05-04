@@ -5,19 +5,23 @@
 #Thank you to Agnes(Smyrna) for providing guidance throughout the whole process
 
 #Importing dependencies
-import discord; import os; import random; import psycopg2; import asyncio
-from bobross import rossQuotes, embedRossIcon
+import discord, os , random, psycopg2, asyncio
 from discord.ext import commands, tasks
 from discord.utils import get
-from config import config
+
+from bobross import rossQuotes, embedRossIcon, pickRandomLine
 from bovonto import embedBovontoIcon, pitches, makePitch, pickRandomLine
+from config import config
+
+
 
 #-----------Buttons!-----------#
 bovontoSchedule = False
 
-#Intializing functions
+#-----------Intializing functions-----------#
 client = commands.Bot(command_prefix='!', description='Butterborg is online.', add=True)
-#Intializing ready    
+
+#-----------Intializing ready-----------#   
 @client.event
 async def on_ready():
     print('Logged in as')
@@ -26,8 +30,6 @@ async def on_ready():
     print('-------')
     print('Resistance is futile.')
 
-#DATABASE_URL = os.environ['DATABASE_URL']
-
 params = config()
 conn = psycopg2.connect(**params)
 cur = conn.cursor()
@@ -35,7 +37,6 @@ cur = conn.cursor()
 greetMessage = "Welcome to the WATTBA-sistance! Please take your time to observe our rules and, if you're comfortable, use the **!callme** command to tag yourself with your pronouns. Available pronouns are **!callme he/him**, **!callme she/her**, **!callme they/them**, **!callme xe/xem** and **!callme ze/zir** If you get tired of your pronouns you can remove them with **!imnot** \n\n There are several other roles you can **!join** too, like **!join streampiggies** to be notified of Eli's streams. Check them out by using **!listroles**. \n\n Oh, and feel free to get an inspirational Bob Ross quote any time with **!bobross**. \n\n This server also uses this bot for meme purposes. Be on the lookout for memes you can send using by sending **!bb** and the name of the meme. You can find a list of those memes with **!beanfo**"
 timeyIcon = 'https://i.imgur.com/vtkIVnl.png'
 unapprovedDeny = "Uh uh uh! {0} didn't say the magic word!\nhttps://imgur.com/IiaYjzH.gif"
-
 
 #---------------- Helper functions ----------------
 #Cleans up returned values from databases
@@ -50,7 +51,6 @@ async def checkApprovedUsers(user):
     check = cur.fetchone()
     if not check is None:
         return True
-
 
 # ---------------- Meme Management ----------------
 #Message Send with !bb arg
@@ -160,9 +160,9 @@ async def bovonto (ctx):
 @client.command()
 async def callme (ctx, genderName):
     user = ctx.message.author
-    genderId = discord.utils.get(ctx.guild.roles, name=genderName)
+    genderId = get(ctx.guild.roles, name=genderName)
     #This checks the list of roles on the server and the order they're in. Do not fuck with the order on the server or this will fuck up.
-    upperDemarc = discord.utils.get(ctx.guild.roles, name='he/him'); lowerDemarc = discord.utils.get(ctx.guild.roles, name='Catillac Cat')
+    upperDemarc = get(ctx.guild.roles, name='he/him'); lowerDemarc = get(ctx.guild.roles, name='Catillac Cat')
     if genderId > upperDemarc or genderId <= lowerDemarc:
         await ctx.send('<:rudy:441453959215972352> Oooooh, {0} isn\'t as sneaky as they think they are. '.format(user.mention))
     elif genderId <= upperDemarc and genderId > lowerDemarc:
@@ -177,7 +177,7 @@ async def callme (ctx, genderName):
 @client.command()
 async def imnot(ctx, oldRole):
     user = ctx.message.author
-    roleToRemove = discord.utils.get(ctx.guild.roles, name=oldRole)
+    roleToRemove = get(ctx.guild.roles, name=oldRole)
     userRoles = ctx.author.roles
     await user.remove_roles(roleToRemove)
     await ctx.send('<:heathsalute:482273509951799296> Comrade {0} no longer wants to be called {1}.'.format(user.mention, oldRole))
@@ -188,8 +188,8 @@ async def imnot(ctx, oldRole):
 @client.command()
 async def join(ctx, newRole):
     user = ctx.message.author
-    roleToAdd = discord.utils.get(ctx.guild.roles, name=newRole.lower())
-    lowerDemarc = discord.utils.get(ctx.guild.roles, name='Catillac Cat')
+    roleToAdd = get(ctx.guild.roles, name=newRole.lower())
+    lowerDemarc = get(ctx.guild.roles, name='Catillac Cat')
     if roleToAdd >= lowerDemarc:
         await ctx.send("<:rudy:441453959215972352> That's not what this is for.")
     else:
@@ -200,7 +200,7 @@ async def join(ctx, newRole):
 @client.command()
 async def leave(ctx, oldRole):
     user = ctx.message.author
-    roleToRemove = discord.utils.get(ctx.guild.roles, name=oldRole.lower())
+    roleToRemove = get(ctx.guild.roles, name=oldRole.lower())
     userRoles = ctx.author.roles
     await user.remove_roles(roleToRemove)
     await ctx.send('{0} is no longer a member of {1}.'.format(user.mention, oldRole))

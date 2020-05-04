@@ -1,4 +1,17 @@
+import random, discord, asyncio
+from discord.ext import commands, tasks
+
+client = commands.Bot(command_prefix='!', description='Butterborg is online.', add=True)
+
+def pickRandomLine(name, icon, lines):
+    randLine = random.randint(0, len(lines) - 1)
+    line = lines[randLine]
+    e = discord.Embed(description=line)
+    e.set_author(name=name, icon_url=icon)
+    return e
+
 embedRossIcon = "http://i.imgur.com/OZLdaSn.png"
+
 rossQuotes = ["There’s nothing wrong with having a tree as a friend.",
     "The secret to doing anything is believing that you can do it. Anything that you believe you can do strong enough, you can do. Anything. As long as you believe.",
     "We don’t make mistakes. We just have happy accidents.",

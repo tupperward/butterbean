@@ -52,8 +52,8 @@ async def checkApprovedUsers(user):
     if not check is None:
         return True"""
     userRoles = user.roles
-    rank = get(discord.guild.roles, name=role)
-    lowerDemarc = get(discord.guild.roles, name='da emoji pervert')
+    rank = get(client.guild.roles, name=role)
+    lowerDemarc = get(client.guild.roles, name='da emoji pervert')
     if userRoles >= lowerDemarc:
         return True 
 

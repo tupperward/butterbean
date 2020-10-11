@@ -46,16 +46,11 @@ def listToString(s):
 
 #Checks to determine if user is approved to add/remove to Butterbean
 async def checkApprovedUsers(user):
-    """lookupString = "SELECT username FROM approved_users WHERE username LIKE  '%{}%';".format(user)
+    lookupString = "SELECT username FROM approved_users WHERE username LIKE  '%{}%';".format(user)
     cur.execute(lookupString)
     check = cur.fetchone()
     if not check is None:
-        return True"""
-    userRoles = user.roles
-    rank = get(discord.guild.roles, name=role)
-    lowerDemarc = get(discord.guild.roles, name='da emoji pervert')
-    if userRoles >= lowerDemarc:
-        return True 
+        return True
 
 # ---------------- Meme Management ----------------
 #Message Send with !bb arg

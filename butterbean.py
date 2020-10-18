@@ -235,7 +235,7 @@ async def tarot(ctx):
             emb.add_field(name='Keywords', value=', '.join(card['keywords']) )
             emb.add_field(name='Yes/No?', value=card['yesno'])
             emb.set_image(url=card['image'])
-            # emb.set_footer(text='© Insert Your Source Here')
+            emb.set_footer(text='Images © Labyrinthos LLC')
             await ctx.send('{0.display_name}, you have drawn: '.format(ctx.message.author), embed=emb)
         else:
             await ctx.send('Oops, I do not seem to have a valid tarot deck loaded, sorry!')

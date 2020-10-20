@@ -19,8 +19,12 @@ from config import config
 #-----------Buttons!-----------#
 bovontoSchedule = False
 
+#-----------Get privileged "members" intent so we can greet new users -----------#
+intents = discord.Intents.default()
+intents.members = True
+
 #-----------Intializing functions-----------#
-client = commands.Bot(command_prefix='!', description='Butterborg is online.', add=True)
+client = commands.Bot(command_prefix='!', description='Butterborg is online.', add=True, intents=intents)
 
 #-----------Intializing ready-----------#   
 @client.event

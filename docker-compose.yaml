@@ -13,11 +13,11 @@ services:
       - 443
       - 5432
     environment:
-      BOT_TOKEN: value
+      BOT_TOKEN: ${TOKEN}
       DATABASE: butterbean
       PG_HOST: db
-      PG_PASS: r00tp@ss!
-      PG_USER: postgres
+      PG_PASS: ${DB_PASS}
+      PG_USER: ${DB_USER}
     networks:
       default:
 
@@ -27,9 +27,8 @@ services:
       - 5432
     environment:
       DATABASE: butterbean
-      PG_HOST: db
-      PG_PASS: r00tp@ss!
-      PG_USER: postgres
+      PG_PASS: ${DB_PASS}
+      PG_USER: ${DB_USER}
     volumes:
       - data
     healthcheck:
@@ -48,10 +47,8 @@ services:
       - data:/tmp/
     environment:
       DB_HOST: db
-      DB_ROOTUSER: postgres
-      DB_ROOTPASSWORD: r00tp@ss!
-      DB_USER: dbuser
-      DB_USERPASSWORD: dbuserpass
+      DB_ROOTUSER: ${DB_USER}
+      DB_ROOTPASSWORD: ${DB_PASS}
       DB_NAME: butterbean
       MODE: restore
       CRON_SCHEDULE: "5 0 * * 1"
@@ -65,10 +62,8 @@ services:
       - data:/tmp/
     environment:
       DB_HOST: db
-      DB_ROOTUSER: postgres
-      DB_ROOTPASSWORD: r00tp@ss!
-      DB_USER: dbuser
-      DB_USERPASSWORD: dbuserpass
+      DB_ROOTUSER: ${DB_USER}
+      DB_ROOTPASSWORD: ${DB_PASS}
       DB_NAME: butterbean
       MODE: backup
       CRON_SCHEDULE: "0 0 * * 1"

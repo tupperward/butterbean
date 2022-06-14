@@ -1,6 +1,8 @@
 start: restore backup app
 
-build: docker compose build app restore backup
+build: 
+	docker compose build app restore backup --no-cache
+
 restore: db pause
 	docker compose up -d restore
 

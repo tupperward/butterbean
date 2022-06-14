@@ -6,9 +6,9 @@ echo "postgresql-backup-restore: restore: Started"
 
 # Ensure the database user exists.
 echo "postgresql-backup-restore: checking for DB user ${DB_USER}"
-result=$(psql --host=${DB_HOST} --username=${DB_ROOTUSER} --command='\du' | grep ${DB_USER})
+result=$(psql --host=${DB_HOST} --username=${DB_USER} --command='\du' | grep ${DB_USER})
 if [ -z "${result}" ]; then
-    result=$(psql --host=${DB_HOST} --username=${DB_ROOTUSER} --command="create role ${DB_USER} with login password '${DB_USERPASSWORD}' inherit;")
+    result=$(psql --host=${DB_HOST} --username=${DB_USER} --command="create role ${DB_USER} with login password '${DB_PASS}' inherit;")
     if [ "${result}" != "CREATE ROLE" ]; then
         message="Create role command failed: ${result}"
         echo "postgresql-backup-restore: FATAL: ${message}"
@@ -18,7 +18,7 @@ fi
 
 # Delete database if it exists.
 echo "postgresql-backup-restore: checking for DB ${DB_NAME}"
-result=$(psql --host=${DB_HOST} --username=${DB_ROOTUSER} --list | grep ${DB_NAME})
+result=$(psql --host=${DB_HOST} --username=${DB_USER} --list | grep ${DB_NAME})
 if [ -z "${result}" ]; then
     message="Database "${DB_NAME}" on host "${DB_HOST}" does not exist."
     echo "postgresql-backup-restore: INFO: ${message}"
@@ -34,7 +34,7 @@ fi
 
 echo "postgresql-backup-restore: restoring ${DB_NAME}"
 start=$(date +%s)
-psql --host=${DB_HOST} --username=${DB_ROOTUSER} --dbname=postgres ${DB_OPTIONS}  < /tmp/${DB_NAME}.sql || STATUS=$?
+psql --host=${DB_HOST} --username=${DB_USER} --dbname=postgres ${DB_OPTIONS}  < /tmp/${DB_NAME}.sql || STATUS=$?
 end=$(date +%s)
 
 if [ $STATUS -ne 0 ]; then

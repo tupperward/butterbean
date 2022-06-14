@@ -1,8 +1,7 @@
 #!/usr/bin/env sh
 
 # hostname:port:database:username:password
-echo ${DB_HOST}:*:*:${DB_USER}:${DB_USERPASSWORD}      > /root/.pgpass
-echo ${DB_HOST}:*:*:${DB_ROOTUSER}:${DB_ROOTPASSWORD} >> /root/.pgpass
+echo ${DB_HOST}:*:*:${DB_USER}:${DB_PASS}      > /root/.pgpass
 chmod 600 /root/.pgpass
 
 STATUS=0

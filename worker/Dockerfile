@@ -9,6 +9,7 @@ RUN apk update \
   && pip install python-magic
 
 COPY application/ /data/
+COPY /etc/butterbean/ /tmp/
 WORKDIR /data
 
 CMD ["./entrypoint.sh"]

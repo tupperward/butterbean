@@ -2,10 +2,10 @@ import os
 
 def config():
     db = {
-        'host': os.environ['PG_HOST'],
-        'database': os.environ['DATABASE'],
-        'user': os.environ['PG_USER'],
-        'password': os.environ['PG_PASS']
+        'host': os.environ['DB_HOST'],
+        'database': os.environ['DB_NAME'],
+        'user': os.environ['DB_USER'],
+        'password': os.environ['DB_PASS']
     }
 
     return db

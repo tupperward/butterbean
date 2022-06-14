@@ -4,7 +4,7 @@ FROM alpine:latest
 RUN apk update \
   && apk add --no-cache \
             bash \
-            postgresql12-client \
+            postgresql13-client \
             python3 py-pip \
   && pip install python-magic
 

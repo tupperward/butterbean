@@ -12,12 +12,8 @@ services:
     ports:
       - 443
       - 5432
-    environment:
-      BOT_TOKEN: "${TOKEN}"
-      DATABASE: "butterbean"
-      DB_HOST: "db"
-      DB_PASS: "testpass"
-      DB_USER: "postgres"
+    env_file:
+      - .env
     networks:
       default:
     healthcheck:
@@ -49,6 +45,8 @@ services:
       - data:/tmp/
     env_file:
       - .env
+    environment:
+      MODE: restore
     depends_on:
       - db
     networks:
@@ -63,6 +61,8 @@ services:
       - data:/tmp/
     env_file:
       - .env
+    environment:
+      MODE: backup
     depends_on:
       - db
     networks:

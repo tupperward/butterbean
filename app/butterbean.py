@@ -243,4 +243,4 @@ async def tarot(ctx):
 
 
 #Actually running the damn thing
-client.run(os.environ['BOT_TOKEN'])
+client.run(os.environ['TOKEN'])

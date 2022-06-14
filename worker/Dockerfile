@@ -1,5 +1,5 @@
 
-FROM alpine:3.15
+FROM alpine:latest
 
 RUN apk update \
   && apk add --no-cache \
@@ -9,7 +9,8 @@ RUN apk update \
   && pip install python-magic
 
 COPY application/ /data/
-COPY /etc/butterbean/ /tmp/
+COPY db/*.sql /tmp/
 WORKDIR /data
-
+RUN chown $(whoami) /data/*
+RUN chmod +x /data/*
 CMD ["./entrypoint.sh"]

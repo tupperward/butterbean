@@ -27,10 +27,8 @@ services:
       - 5432
     environment:
       DATABASE: butterbean
-      PG_PASS: ${DB_PASS}
-      PG_USER: ${DB_USER}
-    volumes:
-      - data
+      POSTGRES_PASSWORD: ${DB_PASS}
+      POSTGRES_USER: ${DB_USER}
     healthcheck:
       test: curl -f https://localhost || exit 1
       interval: 30s

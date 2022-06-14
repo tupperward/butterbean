@@ -1,8 +1,4 @@
-import random, discord, asyncio
-from discord.ext import commands, tasks
-
-client = commands.Bot(command_prefix='!', description='Butterborg is online.', add=True)
-
+#import random, discord, asyncio
 def pickRandomLine(name, icon, lines):
     randLine = random.randint(0, len(lines) - 1)
     line = lines[randLine]

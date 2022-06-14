@@ -1,18 +1,15 @@
 #Butterbean DiscordBot for WATTBA Discord 
 #author: Tupperward
-#content contributors: Smoltz, Jackapedia
-
-#Thank you to Agnes(Smyrna) for providing guidance throughout the whole process
 
 #Importing dependencies
 import discord, os , random, psycopg2, asyncio
 from discord.ext import commands, tasks
 from discord.utils import get
 
-from app.modules.bobross import rossQuotes, embedRossIcon, pickRandomLine
-from app.modules.bovonto import embedBovontoIcon, pitches, makePitch, pickRandomLine
-from app.modules.tarot_data import tarotData
-from app.modules.config import config
+from modules.bobross import rossQuotes, embedRossIcon, pickRandomLine
+from modules.bovonto import embedBovontoIcon, pitches, makePitch, pickRandomLine
+from modules.tarot_data import tarotData
+from modules.config import config
 
 
 

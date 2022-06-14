@@ -1,0 +1,79 @@
+volumes:
+  data:
+
+services:
+  app:
+    build: ./app
+    image: tupperward/butterbean:latest
+    depends_on:
+      - db
+    ports:
+      - 80
+      - 443
+      - 5432
+    environment:
+      BOT_TOKEN: value
+      DATABASE: butterbean
+      PG_HOST: db
+      PG_PASS: r00tp@ss!
+      PG_USER: postgres
+    networks:
+      default:
+
+  db:
+    image: postgres:13.7-alpine
+    ports:
+      - "5432"
+    environment:
+      BOT_TOKEN: value
+      DATABASE: butterbean
+      PG_HOST: db
+      PG_PASS: r00tp@ss!
+      PG_USER: postgres
+    volumes:
+      - data
+    healthcheck:
+      test: curl -f https://localhost || exit 1
+      interval: 30s
+      timeout: 20s
+      retries: 5
+      start_period: 30s
+    networks:
+      default:
+
+  restore:
+    build: ./worker
+    image: restore
+    volumes:
+      - data:/tmp/
+    environment:
+      DB_HOST: db
+      DB_ROOTUSER: postgres
+      DB_ROOTPASSWORD: r00tp@ss!
+      DB_USER: dbuser
+      DB_USERPASSWORD: dbuserpass
+      DB_NAME: butterbean
+      MODE: restore
+      CRON_SCHEDULE: "5 0 * * 1"
+    depends_on:
+      - db
+
+  backup:
+    build: ./worker
+    image: backup
+    volumes:
+      - data:/tmp/
+    environment:
+      DB_HOST: db
+      DB_ROOTUSER: postgres
+      DB_ROOTPASSWORD: r00tp@ss!
+      DB_USER: dbuser
+      DB_USERPASSWORD: dbuserpass
+      DB_NAME: butterbean
+      MODE: backup
+      CRON_SCHEDULE: "0 0 * * 1"
+    depends_on:
+      - db
+
+networks:
+  default:

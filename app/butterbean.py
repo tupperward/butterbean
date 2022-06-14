@@ -9,10 +9,10 @@ import discord, os , random, psycopg2, asyncio
 from discord.ext import commands, tasks
 from discord.utils import get
 
-from bobross import rossQuotes, embedRossIcon, pickRandomLine
-from bovonto import embedBovontoIcon, pitches, makePitch, pickRandomLine
-from tarot_data import tarotData
-from config import config
+from app.modules.bobross import rossQuotes, embedRossIcon, pickRandomLine
+from app.modules.bovonto import embedBovontoIcon, pitches, makePitch, pickRandomLine
+from app.modules.tarot_data import tarotData
+from app.modules.config import config
 
 
 

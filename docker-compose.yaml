@@ -26,7 +26,6 @@ services:
     ports:
       - 5432
     environment:
-      BOT_TOKEN: value
       DATABASE: butterbean
       PG_HOST: db
       PG_PASS: r00tp@ss!

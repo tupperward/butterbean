@@ -7,7 +7,7 @@ echo "postgresql-backup-restore: backup: Started"
 echo "postgresql-backup-restore: Backing up ${DB_NAME}"
 
 start=$(date +%s)
-$(PGPASSWORD=${DB_PASS} pg_dump --host=${DB_HOST} --username=${DB_USER} --create --clean ${DB_OPTIONS} --dbname=${DB_NAME} > /tmp/${DB_NAME}.sql) || STATUS=$?
+$(PGPASSWORD=${POSTGRES_PASSWORD} pg_dump --host=${DB_HOST} --username=${POSTGRES_USER} --create --clean ${DB_OPTIONS} --dbname=${DB_NAME} > /tmp/${DB_NAME}.sql) || STATUS=$?
 end=$(date +%s)
 
 if [ $STATUS -ne 0 ]; then

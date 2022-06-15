@@ -20,18 +20,18 @@ SET row_security = off;
 
 --
 -- TOC entry 3 (class 2615 OID 2200)
--- Name: public; Type: SCHEMA; Schema: -; Owner: uhytxisojtotui
+-- Name: public; Type: SCHEMA; Schema: -; Owner: postgres
 --
 
 CREATE SCHEMA public;
 
 
-ALTER SCHEMA public OWNER TO uhytxisojtotui;
+ALTER SCHEMA public OWNER TO postgres;
 
 --
 -- TOC entry 3939 (class 0 OID 0)
 -- Dependencies: 3
--- Name: SCHEMA public; Type: COMMENT; Schema: -; Owner: uhytxisojtotui
+-- Name: SCHEMA public; Type: COMMENT; Schema: -; Owner: postgres
 --
 
 COMMENT ON SCHEMA public IS 'standard public schema';
@@ -41,7 +41,7 @@ SET default_tablespace = '';
 
 --
 -- TOC entry 196 (class 1259 OID 381630)
--- Name: approved_users; Type: TABLE; Schema: public; Owner: uhytxisojtotui
+-- Name: approved_users; Type: TABLE; Schema: public; Owner: postgres
 --
 
 CREATE TABLE public.approved_users (
@@ -49,11 +49,11 @@ CREATE TABLE public.approved_users (
 );
 
 
-ALTER TABLE public.approved_users OWNER TO uhytxisojtotui;
+ALTER TABLE public.approved_users OWNER TO postgres;
 
 --
 -- TOC entry 197 (class 1259 OID 381633)
--- Name: posts; Type: TABLE; Schema: public; Owner: uhytxisojtotui
+-- Name: posts; Type: TABLE; Schema: public; Owner: postgres
 --
 
 CREATE TABLE public.posts (
@@ -62,12 +62,12 @@ CREATE TABLE public.posts (
 );
 
 
-ALTER TABLE public.posts OWNER TO uhytxisojtotui;
+ALTER TABLE public.posts OWNER TO postgres;
 
 --
 -- TOC entry 3932 (class 0 OID 381630)
 -- Dependencies: 196
--- Data for Name: approved_users; Type: TABLE DATA; Schema: public; Owner: uhytxisojtotui
+-- Data for Name: approved_users; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.approved_users (username) FROM stdin;
@@ -84,7 +84,7 @@ Jackapedia#1612
 --
 -- TOC entry 3933 (class 0 OID 381633)
 -- Dependencies: 197
--- Data for Name: posts; Type: TABLE DATA; Schema: public; Owner: uhytxisojtotui
+-- Data for Name: posts; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.posts (post_name, link) FROM stdin;
@@ -296,12 +296,12 @@ miapiss	https://i.imgur.com/KdEAFNq.png
 --
 -- TOC entry 3940 (class 0 OID 0)
 -- Dependencies: 3
--- Name: SCHEMA public; Type: ACL; Schema: -; Owner: uhytxisojtotui
+-- Name: SCHEMA public; Type: ACL; Schema: -; Owner: postgres
 --
 
 REVOKE ALL ON SCHEMA public FROM postgres;
 REVOKE ALL ON SCHEMA public FROM PUBLIC;
-GRANT ALL ON SCHEMA public TO uhytxisojtotui;
+GRANT ALL ON SCHEMA public TO postgres;
 GRANT ALL ON SCHEMA public TO PUBLIC;
 
 
@@ -311,7 +311,7 @@ GRANT ALL ON SCHEMA public TO PUBLIC;
 -- Name: LANGUAGE plpgsql; Type: ACL; Schema: -; Owner: postgres
 --
 
-GRANT ALL ON LANGUAGE plpgsql TO uhytxisojtotui;
+GRANT ALL ON LANGUAGE plpgsql TO postgres;
 
 
 -- Completed on 2022-06-14 00:22:25

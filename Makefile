@@ -1,15 +1,17 @@
-start: restore backup app
+start: restore app
 
 build: 
 	docker compose build app restore backup --no-cache
 
-restore: db pause
+restore: db
+	sleep 5
 	docker compose up -d restore
 
 backup: db
 	docker compose up -d backup
 
-app: db pause
+app: db
+	sleep 5
 	docker compose up -d app
 
 db:
@@ -18,8 +20,7 @@ db:
 stop:
 	docker compose down
 
-pause:
-	sleep 15
+reset: stop build start
 
 clean:
 	docker compose kill

@@ -1,48 +1,79 @@
 #!/usr/bin/env sh
 
 STATUS=0
+PBR="postgresql-backup-restore"
+echo "${PBR}: restore: Started"
 
-echo "postgresql-backup-restore: restore: Started"
+# Create database
+create_db(){
+    echo "${PBR}: creating DB ${DB_NAME}"
+    result = $(psql --host=${DB_HOST} --username=${POSTGRES_USER} --command="CREATE DATABASE ${DB_NAME};")
+    #if [ "${result}" != "CREATE DATABASE" ]; then
+    #    message="Create database command failed: ${result}"
+    #    echo "${PBR}: FATAL: ${message}"
+    #    exit 1
+    #fi
+}
 
-# Ensure the database user exists.
-echo "postgresql-backup-restore: checking for DB user ${DB_USER}"
-result=$(psql --host=${DB_HOST} --username=${DB_USER} --command='\du' | grep ${DB_USER})
-if [ -z "${result}" ]; then
-    result=$(psql --host=${DB_HOST} --username=${DB_USER} --command="create role ${DB_USER} with login password '${DB_PASS}' inherit;")
+# Create database user
+create_role(){
+    echo "${PBR}: creating role ${POSTGRES_USER}"
+    result=$(psql --host=${DB_HOST} --username=${POSTGRES_USER} --command="create role ${POSTGRES_USER} with login password '${POSTGRES_PASSWORD}' inherit;")
     if [ "${result}" != "CREATE ROLE" ]; then
         message="Create role command failed: ${result}"
-        echo "postgresql-backup-restore: FATAL: ${message}"
+        echo "${PBR}: FATAL: ${message}"
         exit 1
     fi
-fi
+}
 
-# Delete database if it exists.
-echo "postgresql-backup-restore: checking for DB ${DB_NAME}"
-result=$(psql --host=${DB_HOST} --username=${DB_USER} --list | grep ${DB_NAME})
-if [ -z "${result}" ]; then
-    message="Database "${DB_NAME}" on host "${DB_HOST}" does not exist."
-    echo "postgresql-backup-restore: INFO: ${message}"
-else
-    echo "postgresql-backup-restore: deleting database ${DB_NAME}"
-    result=$(psql --host=${DB_HOST} --dbname=postgres --username=${DB_USER} --command="DROP DATABASE ${DB_NAME};")
-    if [ "${result}" != "DROP DATABASE" ]; then
-        message="Create database command failed: ${result}"
-        echo "postgresql-backup-restore: FATAL: ${message}"
-        exit 1
+# Ensure the database user exists.
+check_role(){
+    echo "${PBR}: checking for DB user ${POSTGRES_USER}"
+    result=$(psql --host=${DB_HOST} --username=${POSTGRES_USER} --command='\du' | grep ${POSTGRES_USER})
+    if [ -z "${result}" ]; then
+        create_role
     fi
-fi
+}
 
-echo "postgresql-backup-restore: restoring ${DB_NAME}"
-start=$(date +%s)
-psql --host=${DB_HOST} --username=${DB_USER} --dbname=postgres ${DB_OPTIONS}  < /tmp/${DB_NAME}.sql || STATUS=$?
-end=$(date +%s)
+# Ensure the database exists
+check_db(){
+    echo "${PBR}: checking for DB ${DB_NAME}"
+    result=$(psql --host=${DB_HOST} --username ${POSTGRES_USER} --command='\l' | grep ${DB_NAME})
+    if [ -z "${result}" ]; then
+        message="Database "${DB_NAME}" on host "${DB_HOST}" does not exist."
+        echo "${PBR}: LOG: ${message}"
+        create_db
+    else 
+        echo "${PBR}: deleting database "
+        result=$(psql --host=${DB_HOST} --dbname=${DB_NAME} --username=${POSTGRES_USER} --command="DROP DATABASE ${DB_NAME};")
+        if [ "${result}" != "DROP DATABASE" ]; then
+            message="Delete database command failed: ${result}"
+            echo "${PBR}: FATAL: ${message}"
+            exit 1
+        fi
+        create_db
+    fi
+}
 
-if [ $STATUS -ne 0 ]; then
-    echo "postgresql-backup-restore: FATAL: Restore of ${DB_NAME} returned non-zero status ($STATUS) in $(expr ${end} - ${start}) seconds."
+# Restore database from file
+restore_db(){
+    echo "${PBR}: restoring ${DB_NAME}"
+    start=$(date +%s)
+    psql --host=${DB_HOST} --username=${POSTGRES_USER} -f /tmp/${DB_NAME}.sql || STATUS=$?
+    end=$(date +%s)
+
+    if [ $STATUS -ne 0 ]; then
+        echo "${PBR}: FATAL: Restore of ${DB_NAME} returned non-zero status ($STATUS) in $(expr ${end} - ${start}) seconds."
+        exit $STATUS
+    else
+        echo "${PBR}: Restore of ${DB_NAME} completed in $(expr ${end} - ${start}) seconds."
+    fi
+
+    echo "${PBR}: restore: Completed"
     exit $STATUS
-else
-    echo "postgresql-backup-restore: Restore of ${DB_NAME} completed in $(expr ${end} - ${start}) seconds."
-fi
+}
 
-echo "postgresql-backup-restore: restore: Completed"
-exit $STATUS
+# Execute
+check_db
+check_role
+restore_db

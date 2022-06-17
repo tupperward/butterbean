@@ -25,6 +25,8 @@ services:
     command: sleep 30
     expose:
       - 443
+    restart: unless-stopped
+
   db:
     image: postgres:13.7-alpine
     ports:
@@ -41,38 +43,9 @@ services:
       default:
     expose:
       - 5432
-
-  restore:
-    build: ./worker
-    image: restore
+    restart: unless-stopped
     volumes:
-      - data:/tmp/
-    env_file:
-      - .env
-    environment:
-      MODE: restore
-    depends_on:
-      - db
-    networks:
-      default:
-    ports:
-    - 5432
-
-  backup:
-    build: ./worker
-    image: backup
-    volumes:
-      - data:/tmp/
-    env_file:
-      - .env
-    environment:
-      MODE: backup
-    depends_on:
-      - db
-    networks:
-      default:
-    ports: 
-      - 5432
+      - ./db/:/docker-entrypoint-initdb.d/
 
 networks:
   default:

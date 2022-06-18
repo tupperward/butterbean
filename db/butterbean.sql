@@ -1,5 +1,5 @@
 --
--- PostgreSQL database dump
+-- postgresQL database dump
 --
 
 -- Dumped from database version 11.16 (Ubuntu 11.16-1.pgdg20.04+1)
@@ -22,10 +22,8 @@ SET row_security = off;
 -- TOC entry 3 (class 2615 OID 2200)
 -- Name: public; Type: SCHEMA; Schema: -; Owner: postgres
 --
-
-CREATE SCHEMA public;
-
-
+ALTER DATABASE butterbean OWNER TO postgres;
+CREATE SCHEMA IF NOT EXISTS public;
 ALTER SCHEMA public OWNER TO postgres;
 
 --
@@ -299,11 +297,8 @@ miapiss	https://i.imgur.com/KdEAFNq.png
 -- Name: SCHEMA public; Type: ACL; Schema: -; Owner: postgres
 --
 
-REVOKE ALL ON SCHEMA public FROM postgres;
-REVOKE ALL ON SCHEMA public FROM PUBLIC;
 GRANT ALL ON SCHEMA public TO postgres;
-GRANT ALL ON SCHEMA public TO PUBLIC;
-
+GRANT ALL ON DATABASE butterbean TO postgres;
 
 --
 -- TOC entry 3941 (class 0 OID 0)
@@ -317,6 +312,6 @@ GRANT ALL ON LANGUAGE plpgsql TO postgres;
 -- Completed on 2022-06-14 00:22:25
 
 --
--- PostgreSQL database dump complete
+-- postgresQL database dump complete
 --
 

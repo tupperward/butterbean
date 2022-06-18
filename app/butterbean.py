@@ -16,12 +16,12 @@ from modules.config import config
 #-----------Buttons!-----------#
 bovontoSchedule = False
 
-#-----------Get privileged "members" intent so we can greet new users -----------#
-intents = discord.Intents.default()
-intents.members = True
+#-----------Get privileged intents so we can be in compliance with the API  -----------#
+intents = discord.Intents(messages= True, members= True,message_content= True )
 
 #-----------Intializing functions-----------#
 client = commands.Bot(command_prefix='!', description='Butterborg is online.', add=True, intents=intents)
+
 
 #-----------Intializing ready-----------#   
 @client.event

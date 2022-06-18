@@ -1,26 +1,30 @@
-start: restore app
-
 build: 
-	docker compose build app restore backup --no-cache
-
-restore: db
-	sleep 5
-	docker compose up -d restore
-
-backup: db
-	docker compose up -d backup
+	docker build app/. -t tupperward/butterbean
 
 app: db
-	sleep 5
 	docker compose up -d app
 
 db:
 	docker compose up -d db
+	sleep 5
 
 stop:
 	docker compose down
 
-reset: stop build start
+reset: stop
+	docker compose up -d
+
+rerun: stop build
+	docker compose up -d
+
+exec:
+	docker compose exec db bin/bash
+
+dblogs:
+	docker compose logs db
+
+applogs:
+	docker compose logs app
 
 clean:
 	docker compose kill

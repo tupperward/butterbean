@@ -1,30 +1,27 @@
 #Butterbean DiscordBot for WATTBA Discord 
 #author: Tupperward
-#content contributors: Smoltz, Jackapedia
-
-#Thank you to Agnes(Smyrna) for providing guidance throughout the whole process
 
 #Importing dependencies
 import discord, os , random, psycopg2, asyncio
 from discord.ext import commands, tasks
 from discord.utils import get
 
-from bobross import rossQuotes, embedRossIcon, pickRandomLine
-from bovonto import embedBovontoIcon, pitches, makePitch, pickRandomLine
-from tarot_data import tarotData
-from config import config
+from modules.bobross import rossQuotes, embedRossIcon, pickRandomLine
+from modules.bovonto import embedBovontoIcon, pitches, makePitch, pickRandomLine
+from modules.tarot_data import tarotData
+from modules.config import config
 
 
 
 #-----------Buttons!-----------#
 bovontoSchedule = False
 
-#-----------Get privileged "members" intent so we can greet new users -----------#
-intents = discord.Intents.default()
-intents.members = True
+#-----------Get privileged intents so we can be in compliance with the API  -----------#
+intents = discord.Intents(messages= True, members= True,message_content= True )
 
 #-----------Intializing functions-----------#
 client = commands.Bot(command_prefix='!', description='Butterborg is online.', add=True, intents=intents)
+
 
 #-----------Intializing ready-----------#   
 @client.event
@@ -246,4 +243,4 @@ async def tarot(ctx):
 
 
 #Actually running the damn thing
-client.run(os.environ['BOT_TOKEN'])
+client.run(os.environ['TOKEN'])

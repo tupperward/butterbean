@@ -22,9 +22,7 @@ services:
       timeout: 30s
       retries: 5
       start_period: 30s
-    command: sleep 30
-    expose:
-      - 443
+    entrypoint: ./wait-for-it.sh db:5432 -- python butterbean.py --verbose
     restart: unless-stopped
 
   db:
@@ -41,8 +39,6 @@ services:
       start_period: 30s
     networks:
       default:
-    expose:
-      - 5432
     restart: unless-stopped
     volumes:
       - ./db/:/docker-entrypoint-initdb.d/

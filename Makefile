@@ -1,11 +1,7 @@
 build: 
-	docker compose build --no-cache
-
-backup: db
-	docker compose up -d backup
+	docker build app/. -t tupperward/butterbean
 
 app: db
-	sleep 8
 	docker compose up -d app
 
 db:
@@ -14,7 +10,11 @@ db:
 stop:
 	docker compose down
 
-reset: stop build start
+reset: stop
+	docker compose up -d
+
+rerun: stop build
+	docker compose up -d
 
 clean:
 	docker compose kill

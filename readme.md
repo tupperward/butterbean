@@ -10,4 +10,4 @@ As it stands with this version, it can be self hosted. If you have a backup butt
 
 There a `.env` that you will have to complete as well. It's pretty self explanatory, the only thing you ened to add is your Bot's OAuth token.
 
-Otherwise, `make reset` should bring the bot up to speed.
+Otherwise, `make build && make start` should bring the bot up to speed.

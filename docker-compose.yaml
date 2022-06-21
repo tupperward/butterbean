@@ -6,7 +6,6 @@ volumes:
 services:
   app:
     build: ./app
-    image: tupperward/butterbean:latest
     depends_on:
       - db
     ports:

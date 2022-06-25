@@ -215,10 +215,7 @@ async def leave(ctx, oldRole):
 #Lists unformatted all roles.  
 @client.command()
 async def listroles(ctx):
-    rolesStr = ''
-    roles = ctx.guild.roles
-    for i in roles:
-        rolesStr += " " + str(i) +","
+    rolesStr = ', '.join(map(lambda r: str(r), ctx.guild.roles))
     await ctx.send(rolesStr)
 
 #Creates a looped task to execute the Bovonto pitches regularly

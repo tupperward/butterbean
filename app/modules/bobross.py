@@ -1,4 +1,7 @@
-#import random, discord, asyncio
+
+import random
+import discord
+
 def pickRandomLine(name, icon, lines):
     randLine = random.randint(0, len(lines) - 1)
     line = lines[randLine]

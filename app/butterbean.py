@@ -17,7 +17,10 @@ from modules.config import config
 bovontoSchedule = False
 
 #-----------Get privileged intents so we can be in compliance with the API  -----------#
-intents = discord.Intents(messages= True, members= True,message_content= True )
+intents = discord.Intents.default()
+intents.messages = True
+intents.members = True
+intents.message_content = True  
 
 #-----------Intializing functions-----------#
 client = commands.Bot(command_prefix='!', description='Butterborg is online.', add=True, intents=intents)
@@ -212,15 +215,12 @@ async def leave(ctx, oldRole):
 #Lists unformatted all roles.  
 @client.command()
 async def listroles(ctx):
-    rolesStr = ''
-    roles = ctx.guild.roles
-    for i in roles:
-        rolesStr += " " + str(i) +","
+    rolesStr = ', '.join(map(lambda r: str(r), ctx.guild.roles))
     await ctx.send(rolesStr)
 
 #Creates a looped task to execute the Bovonto pitches regularly
 while bovontoSchedule == True:
-   client.loop.create_task(makePitch())
+   client.loop.create_task(makePitch(client))
 
 #---------------- Tarot functions ----------------
 # single card draw

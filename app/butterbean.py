@@ -17,7 +17,10 @@ from modules.config import config
 bovontoSchedule = False
 
 #-----------Get privileged intents so we can be in compliance with the API  -----------#
-intents = discord.Intents(messages= True, members= True,message_content= True )
+intents = discord.Intents.default()
+intents.messages = True
+intents.members = True
+intents.message_content = True  
 
 #-----------Intializing functions-----------#
 client = commands.Bot(command_prefix='!', description='Butterborg is online.', add=True, intents=intents)

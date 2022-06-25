@@ -223,7 +223,7 @@ async def listroles(ctx):
 
 #Creates a looped task to execute the Bovonto pitches regularly
 while bovontoSchedule == True:
-   client.loop.create_task(makePitch())
+   client.loop.create_task(makePitch(client))
 
 #---------------- Tarot functions ----------------
 # single card draw

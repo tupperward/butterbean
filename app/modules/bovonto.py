@@ -1,4 +1,8 @@
-#import random, discord, asyncio
+
+import random
+import discord
+import asyncio
+
 def pickRandomLine(name, icon, lines):
     randLine = random.randint(0, len(lines) - 1)
     line = lines[randLine]
@@ -6,7 +10,7 @@ def pickRandomLine(name, icon, lines):
     e.set_author(name=name, icon_url=icon)
     return e
 
-async def makePitch():
+async def makePitch(client):
     #Sets up status as ready
     await client.wait_until_ready()
     #Defines channels to send to (TOKENIZE THIS ASAP)

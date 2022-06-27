@@ -2,7 +2,7 @@
 #author: Tupperward
 
 #Importing dependencies
-import discord, os , random, psycopg2, asyncio
+import discord, os , random, sqlite3, sqlalchemy, asyncio
 from discord.ext import commands, tasks
 from discord.utils import get
 
@@ -10,7 +10,7 @@ from modules.bobross import rossQuotes, embedRossIcon, pickRandomLine
 from modules.bovonto import embedBovontoIcon, pitches, makePitch, pickRandomLine
 from modules.tarot_data import tarotData
 from modules.config import config
-
+from sqlalchemy import create_engine, text
 
 
 #-----------Buttons!-----------#
@@ -35,26 +35,19 @@ async def on_ready():
     print('-------')
     print('Resistance is futile.')
 
-params = config()
-conn = psycopg2.connect(**params)
-cur = conn.cursor()
+engine = create_engine("sqlite+pysqlite:///db/butterbean.sql", echo=True, future=True)
 
 greetMessage = "Welcome to the WATTBA-sistance! Please take your time to observe our rules and, if you're comfortable, use the **!callme** command to tag yourself with your pronouns. Available pronouns are **!callme he/him**, **!callme she/her**, **!callme they/them**, as well as several neopronouns. If you want to change your pronouns you can remove them with **!imnot** \n\nThere are several other roles you can **!join** too, like **!join streampiggies** to be notified of Eli's streams. Check them out by using **!listroles**. \n\nFeel free to reach out to any of our mods for any reason, they're always happy to talk: Criss (aka Criss or @Carissa) or Hugo (aka Furby or @hugs). \n\nThis server also uses this bot for meme purposes. Be on the lookout for memes you can send using by sending **!bb** and the name of the meme. You can find a list of those memes with **!beanfo**"
 timeyIcon = 'https://i.imgur.com/vtkIVnl.png'
 unapprovedDeny = "Uh uh uh! {0} didn't say the magic word!\nhttps://imgur.com/IiaYjzH.gif"
 
 #---------------- Helper functions ----------------
-#Cleans up returned values from databases
-def listToString(s):
-    str1 = " "
-    return (str1.join(s).replace(" ", ", "))
-
 #Checks to determine if user is approved to add/remove to Butterbean
 async def checkApprovedUsers(user):
     lookupString = "SELECT username FROM approved_users WHERE username LIKE  '%{}%';".format(user)
-    cur.execute(lookupString)
-    check = cur.fetchone()
-    if not check is None:
+    with engine.connect() as conn:
+        result = conn.execute(text(lookupString))
+    if not result is None:
         return True
 
 # ---------------- Meme Management ----------------
@@ -62,71 +55,56 @@ async def checkApprovedUsers(user):
 @client.command()
 async def bb(ctx, arg):
     params = config()
-    conn = psycopg2.connect(**params)
-    cur = conn.cursor()
+    with engine.connect() as conn:
 
-    search = arg.lower()
-    lookupString = "SELECT link FROM posts WHERE post_name LIKE '%{}%';".format(search)
-    cur.execute(lookupString)
-    response = cur.fetchone()
-    conn.close()
-    if response is None:
-        await ctx.send("Sorry, this command doesn't exist.")
-    else:
-        split = response[0].replace("'",'')
-        await ctx.send(split)
+        search = arg.lower()
+        lookupString = "SELECT link FROM posts WHERE post_name LIKE '%{}%';".format(search)
+        response = conn.execute(text(lookupString))
+        if response is None:
+            await ctx.send("Sorry, this command doesn't exist.")
+        else:
+            split = response[0].replace("'",'')
+            await ctx.send(split)
 
 #Mods can add items to the list
 @client.command()
 async def add(ctx, key, val):
-    params = config()
-    conn = psycopg2.connect(**params)
-    cur = conn.cursor()
-    key = key.lower()
-
     if await checkApprovedUsers(ctx.message.author):
-        lookupString = "INSERT INTO posts VALUES ('{0}','{1}');".format(key,val)
-        cur.execute(lookupString)
-        conn.commit()
-        conn.close()
-        await ctx.send("{} has been added to my necroborgic memories".format(key))
+        with engine.connect() as conn:
+            lookupString = "INSERT INTO posts VALUES ('{0}','{1}');".format(key,val)
+            conn.execute(text(lookupString))
+            conn.commit()
+            await ctx.send("{} has been added to my necroborgic memories".format(key))
     else:
         await ctx.send(unapprovedDeny.format(ctx.message.author))
 
 #Mods can remove items from the list
 @client.command()
 async def remove (ctx, key): 
-    params = config()
-    conn = psycopg2.connect(**params)
-    cur = conn.cursor()
-    key = key.lower()
-
     if await checkApprovedUsers(ctx.message.author):
-
-        lookupString = "DELETE FROM posts WHERE post_name LIKE '%{}%';".format(key)
-        cur.execute(lookupString)
-        conn.commit()
-        conn.close()
-        await ctx.send("{} has been purged from my necroborgic memories".format(key))
+        with engine.connect() as conn:
+            lookupString = "DELETE FROM posts WHERE post_name LIKE '%{}%';".format(key)
+            conn.execute(text(lookupString))
+            conn.commit()
+            await ctx.send("{} has been purged from my necroborgic memories".format(key))
     else:
         await ctx.send(unapprovedDeny.format(ctx.message.author))
 
 #Lists all meme commands
 @client.command()
 async def beanfo(ctx):
-    params = config()
-    conn = psycopg2.connect(**params)
-    cur = conn.cursor()
-    
-    cur.execute('SELECT post_name FROM posts;')
-    info = cur.fetchall()
-    finalList = []
-    for i in info:
-        finalList.append(i[0].replace("'",''))
+    #Cleans up returned values from databases
+    def listToString(s):
+        str1 = " "
+        return (str1.join(s).replace(" ", ", "))
+        
+    with engine.connect() as conn:
+        info = conn.execute(text('SELECT post_name FROM posts;'))
+        finalList = []
+        for i in info:
+            finalList.append(i[0].replace("'",''))
 
-    conn.close()
-    await ctx.send(listToString(finalList))
-    
+        await ctx.send(listToString(finalList))
 
 # ---------------- New Member Welcome ----------------
 #Welcomes a new member

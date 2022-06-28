@@ -9,7 +9,6 @@ from discord.utils import get
 from modules.bobross import rossQuotes, embedRossIcon, pickRandomLine
 from modules.bovonto import embedBovontoIcon, pitches, makePitch, pickRandomLine
 from modules.tarot_data import tarotData
-from modules.config import config
 from sqlalchemy import create_engine, text
 
 
@@ -35,7 +34,7 @@ async def on_ready():
     print('-------')
     print('Resistance is futile.')
 
-engine = create_engine("sqlite+pysqlite:///db/butterbean.sql", echo=True, future=True)
+engine = create_engine("sqlite+pysqlite:///db/butterbean.db", echo=True, future=True)
 
 greetMessage = "Welcome to the WATTBA-sistance! Please take your time to observe our rules and, if you're comfortable, use the **!callme** command to tag yourself with your pronouns. Available pronouns are **!callme he/him**, **!callme she/her**, **!callme they/them**, as well as several neopronouns. If you want to change your pronouns you can remove them with **!imnot** \n\nThere are several other roles you can **!join** too, like **!join streampiggies** to be notified of Eli's streams. Check them out by using **!listroles**. \n\nFeel free to reach out to any of our mods for any reason, they're always happy to talk: Criss (aka Criss or @Carissa) or Hugo (aka Furby or @hugs). \n\nThis server also uses this bot for meme purposes. Be on the lookout for memes you can send using by sending **!bb** and the name of the meme. You can find a list of those memes with **!beanfo**"
 timeyIcon = 'https://i.imgur.com/vtkIVnl.png'
@@ -54,7 +53,6 @@ async def checkApprovedUsers(user):
 #Message Send with !bb arg
 @client.command()
 async def bb(ctx, arg):
-    params = config()
     with engine.connect() as conn:
 
         search = arg.lower()
@@ -97,7 +95,7 @@ async def beanfo(ctx):
     def listToString(s):
         str1 = " "
         return (str1.join(s).replace(" ", ", "))
-        
+
     with engine.connect() as conn:
         info = conn.execute(text('SELECT post_name FROM posts;'))
         finalList = []

@@ -1,46 +1,10 @@
-
 version: "3.9"
-volumes:
-  data:
-
 services:
   app:
     build: ./app
-    depends_on:
-      - db
     ports:
       - 443
-      - 5432
-    env_file:
-      - .env
-    networks:
-      default:
-    healthcheck:
-      test: pg_isready -d butterbean -h db -p 5432 -U postgres 
-      interval: 1m30s
-      timeout: 30s
-      retries: 5
-      start_period: 30s
-    entrypoint: ./wait-for-it.sh db:5432 -- python butterbean.py --verbose
+    environment:
+      - TOKEN=value
+    entrypoint: ["python", "butterbean.py"]
     restart: unless-stopped
-
-  db:
-    image: postgres:13.7-alpine
-    ports:
-      - 5432
-    env_file:
-      - .env
-    healthcheck:
-      test: curl -f https://localhost || exit 1
-      interval: 30s
-      timeout: 20s
-      retries: 5
-      start_period: 30s
-    networks:
-      default:
-    restart: unless-stopped
-    volumes:
-      - ./db/:/docker-entrypoint-initdb.d/
-
-networks:
-  default:

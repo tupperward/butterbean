@@ -2,14 +2,16 @@
 #author: Tupperward
 
 #Importing dependencies
-import discord, os , random, sqlite3, sqlalchemy, asyncio
+import discord, os , random, asyncio
 from discord.ext import commands, tasks
 from discord.utils import get
 
 from modules.bobross import rossQuotes, embedRossIcon, pickRandomLine
 from modules.bovonto import embedBovontoIcon, pitches, makePitch, pickRandomLine
 from modules.tarot_data import tarotData
+
 from sqlalchemy import create_engine, text
+from sqlalchemy.orm import Session
 
 
 #-----------Buttons!-----------#
@@ -22,8 +24,8 @@ intents.members = True
 intents.message_content = True  
 
 #-----------Intializing functions-----------#
+# TODO #24 Update to accept / commands
 client = commands.Bot(command_prefix='!', description='Butterborg is online.', add=True, intents=intents)
-
 
 #-----------Intializing ready-----------#   
 @client.event
@@ -41,49 +43,79 @@ timeyIcon = 'https://i.imgur.com/vtkIVnl.png'
 unapprovedDeny = "Uh uh uh! {0} didn't say the magic word!\nhttps://imgur.com/IiaYjzH.gif"
 
 #---------------- Helper functions ----------------
-#Checks to determine if user is approved to add/remove to Butterbean
-async def checkApprovedUsers(user):
-    lookupString = "SELECT username FROM approved_users WHERE username LIKE  '%{}%';".format(user)
-    with engine.connect() as conn:
-        result = conn.execute(text(lookupString))
-    if not result is None:
-        return True
+# Cleans special characters off of a string. Returns string without any special charactes
+#* Returns String
+#! Can be dangerous if used on URI
+async def cleanString(res: str) -> str:
+    specialChars = "!$%^&*()',"
+    for char in specialChars:
+        res = res.replace(char,'')
+    return str(res)
+
+# Checks to determine if user is approved to add/remove to Butterbean. 
+#* Returns Boolean
+# TODO #23 Change this to checking for a `deputy` level role instead of using the database. 
+async def checkApprovedUsers(user: str) -> bool:
+    lookupString = "SELECT COUNT(1) FROM approved_users WHERE username LIKE  '%{}%';".format(user)
+    with Session(engine) as session:
+        session.begin()
+        try:
+            response = session.execute(text(lookupString))
+        except:
+            print('Failed to query approved_users')
+        res = []
+        for row in response:
+            res.append(row)
+        check = await cleanString(int(res[0]))
+        print(check)
+        if check:
+            return True 
 
 # ---------------- Meme Management ----------------
 #Message Send with !bb arg
 @client.command()
-async def bb(ctx, arg):
-    with engine.connect() as conn:
-
+async def bb(ctx, arg: str):
+    with Session(engine) as session:
+        session.begin()        
         search = arg.lower()
         lookupString = "SELECT link FROM posts WHERE post_name LIKE '%{}%';".format(search)
-        response = conn.execute(text(lookupString))
+        try:
+            response = session.execute(text(lookupString))
+        except:
+            print('Failed to query posts for {}'.format(search))
+        
         if response is None:
             await ctx.send("Sorry, this command doesn't exist.")
         else:
-            split = response[0].replace("'",'')
-            await ctx.send(split)
+            res = []
+            for row in response:
+                res.append(row)
+            
+            link = await cleanString(str(res[0]))
+            await ctx.send(link)
 
 #Mods can add items to the list
 @client.command()
-async def add(ctx, key, val):
+async def add(ctx, key: str, val: str):
     if await checkApprovedUsers(ctx.message.author):
-        with engine.connect() as conn:
+        with Session(engine) as session:
+            session.begin()
             lookupString = "INSERT INTO posts VALUES ('{0}','{1}');".format(key,val)
-            conn.execute(text(lookupString))
-            conn.commit()
+            session.execute(text(lookupString))
+            session.commit()
             await ctx.send("{} has been added to my necroborgic memories".format(key))
     else:
         await ctx.send(unapprovedDeny.format(ctx.message.author))
 
 #Mods can remove items from the list
 @client.command()
-async def remove (ctx, key): 
+async def remove (ctx, key: str): 
     if await checkApprovedUsers(ctx.message.author):
-        with engine.connect() as conn:
+        with Session(engine) as session:
+            session.begin()
             lookupString = "DELETE FROM posts WHERE post_name LIKE '%{}%';".format(key)
-            conn.execute(text(lookupString))
-            conn.commit()
+            session.execute(text(lookupString))
+            session.commit()
             await ctx.send("{} has been purged from my necroborgic memories".format(key))
     else:
         await ctx.send(unapprovedDeny.format(ctx.message.author))
@@ -96,18 +128,21 @@ async def beanfo(ctx):
         str1 = " "
         return (str1.join(s).replace(" ", ", "))
 
-    with engine.connect() as conn:
-        info = conn.execute(text('SELECT post_name FROM posts;'))
+    with Session(engine) as session:
+        session.begin()
+        info = session.execute(text('SELECT post_name FROM posts;'))
+        
         finalList = []
         for i in info:
             finalList.append(i[0].replace("'",''))
 
         await ctx.send(listToString(finalList))
 
+
 # ---------------- New Member Welcome ----------------
 #Welcomes a new member
 @client.event
-async def on_member_join( member):
+async def on_member_join(member):
     guild = member.guild
     if guild.system_channel is not None:
         eMessage = discord.Embed(description="{0.mention}! {1}".format(member, greetMessage))
@@ -121,7 +156,7 @@ async def resend(ctx):
     eMessage.set_author(name='Timey', icon_url=timeyIcon)
     await ctx.send(embed=eMessage)
 
-
+# TODO #21 port this module to the db
 # ---------------- Sending random messages ----------------
 #Bob Ross quote
 @client.command()
@@ -130,7 +165,7 @@ async def bobross (ctx):
     await ctx.send(embed=pickRandomLine(name='Bob Ross',icon=embedRossIcon, lines= rossQuotes))
 
 
-
+# TODO #22 port this module to the db
 #Just sends a damn Bovonto pitch
 @client.command()
 async def bovonto (ctx):
@@ -139,7 +174,7 @@ async def bovonto (ctx):
 #---------------- Role management functions ----------------
 #Adds a pronoun specific role
 @client.command()
-async def callme (ctx, genderName):
+async def callme (ctx, genderName: str):
     user = ctx.message.author
     genderId = get(ctx.guild.roles, name=genderName)
     #This checks the list of roles on the server and the order they're in. Do not fuck with the order on the server or this will fuck up.
@@ -156,7 +191,7 @@ async def callme (ctx, genderName):
 
 #Removes a pronoun specific role          
 @client.command()
-async def imnot(ctx, oldRole):
+async def imnot(ctx, oldRole: str):
     user = ctx.message.author
     roleToRemove = get(ctx.guild.roles, name=oldRole)
     userRoles = ctx.author.roles
@@ -167,7 +202,7 @@ async def imnot(ctx, oldRole):
 
 #Adds a non-pronoun specific role
 @client.command()
-async def join(ctx, newRole):
+async def join(ctx, newRole: str):
     user = ctx.message.author
     roleToAdd = get(ctx.guild.roles, name=newRole.lower())
     lowerDemarc = get(ctx.guild.roles, name='Catillac Cat')
@@ -179,7 +214,7 @@ async def join(ctx, newRole):
 
 #Removes a non-pronoun specific role
 @client.command()
-async def leave(ctx, oldRole):
+async def leave(ctx, oldRole: str):
     user = ctx.message.author
     roleToRemove = get(ctx.guild.roles, name=oldRole.lower())
     userRoles = ctx.author.roles
@@ -196,7 +231,7 @@ async def listroles(ctx):
 
 #Creates a looped task to execute the Bovonto pitches regularly
 while bovontoSchedule == True:
-   client.loop.create_task(makePitch(client))
+    client.loop.create_task(makePitch(client))
 
 #---------------- Tarot functions ----------------
 # single card draw
@@ -216,7 +251,6 @@ async def tarot(ctx):
             await ctx.send('{0.display_name}, you have drawn: '.format(ctx.message.author), embed=emb)
         else:
             await ctx.send('Oops, I do not seem to have a valid tarot deck loaded, sorry!')
-
 
 #Actually running the damn thing
 client.run(os.environ['TOKEN'])

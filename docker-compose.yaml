@@ -7,4 +7,6 @@ services:
     environment:
       - TOKEN=value
     entrypoint: ["python", "butterbean.py"]
+    volumes:
+      - ./app/db/:/app/db/
     restart: unless-stopped

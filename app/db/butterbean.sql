@@ -1,18 +1,10 @@
 -- Create the necessary tables --
-CREATE TABLE [IF NOT EXISTS] APPROVED_USERS (
-    ID INT PRIMARY KEY NOT NULL,
-    USERNAME TEXT NOT NULL
-);
+CREATE TABLE Approved_Users (ID INT PRIMARY KEY, username TEXT );
 
-CREATE TABLE [IF NOT EXISTS] POSTS (
-    ID INT PRIMARY KEY NOT NULL,
-    POST_NAME TEXT UNIQUE,
-    LINK TEXT NOT NULL,
-    PRIMARY KEY (POST_NAME)
-);
+CREATE TABLE Posts (ID INT PRIMARY KEY, post_name TEXT, link TEXT);
 
 -- Load data for approved users. Formerly moderators, this will soon be anybody deemed cool --
-INSERT INTO APPROVED_USERS (USERNAME) VALUES
+INSERT INTO Approved_Users (username) VALUES
     ('iTuna#0209'),
     ('Carissa#0420'),
     ('hugs#2593'),
@@ -22,7 +14,7 @@ INSERT INTO APPROVED_USERS (USERNAME) VALUES
     ('Jackapedia#1612');
 
 -- Load data for all the memes --
-INSERT INTO POSTS (POST_NAME, LINK) VALUES
+INSERT INTO Posts (post_name, link) VALUES
     ('goodparenting', 'https://ibb.co/9c2Nj9c'),
     ('sixtynine', 'https://imgur.com/a/4qIriF2'),
     ('ass', 'https://imgur.com/a/qkAB9tM'),

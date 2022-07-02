@@ -66,9 +66,8 @@ async def checkApprovedUsers(user: str) -> bool:
         res = []
         for row in response:
             res.append(row)
-        check = await cleanString(int(res[0]))
-        print(check)
-        if check:
+        check = await cleanString(str(res[0]))
+        if int(check):
             return True 
 
 # ---------------- Meme Management ----------------
@@ -100,7 +99,7 @@ async def add(ctx, key: str, val: str):
     if await checkApprovedUsers(ctx.message.author):
         with Session(engine) as session:
             session.begin()
-            lookupString = "INSERT INTO posts VALUES ('{0}','{1}');".format(key,val)
+            lookupString = "INSERT INTO posts (post_name, link) VALUES ('{0}','{1}');".format(key,val)
             session.execute(text(lookupString))
             session.commit()
             await ctx.send("{} has been added to my necroborgic memories".format(key))

@@ -15,4 +15,4 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Build the Docker image
-      run: docker build . --file ./app/. --tag tupperward/butterbean:$(date +%s)
+      run: docker build ./app/. --tag tupperward/butterbean:$(date +%s)

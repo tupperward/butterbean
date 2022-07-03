@@ -55,4 +55,3 @@ jobs:
         with:
           context: ./app/.
           push: true
-          tags: latest

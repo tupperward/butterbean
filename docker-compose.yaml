@@ -4,8 +4,7 @@ services:
     build: ./app
     ports:
       - 443
-    environment:
-      - TOKEN=value
+    env_file: .env
     entrypoint: ["python", "butterbean.py"]
     volumes:
       - ./app/db/:/app/db/

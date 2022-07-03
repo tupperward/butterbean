@@ -6,6 +6,8 @@ name: Docker
 # documentation.
 
 on:
+  schedule:
+    - cron: "0 0 * * 1"
   push:
     branches: [ "master" ]
     # Publish semver tags as releases.
@@ -14,7 +16,7 @@ on:
     branches: [ "master" ]
 
 env:
-  IMAGE_NAME: tupperward/butterbean
+  IMAGE_NAME: ${{ secrets.DOCKER_USER }}/butterbean
 
 
 jobs:

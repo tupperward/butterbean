@@ -24,8 +24,7 @@ intents.members = True
 intents.message_content = True  
 
 #-----------Intializing functions-----------#
-# TODO #24 Update to accept / commands
-client = commands.Bot(command_prefix='!', description='Butterborg is online.', add=True, intents=intents)
+client = commands.Bot(command_prefix=('/','!'), description='Butterborg is online.', add=True, intents=intents)
 
 #-----------Intializing ready-----------#   
 @client.event

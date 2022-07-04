@@ -2,15 +2,14 @@
 #author: Tupperward
 
 #Importing dependencies
+from importlib.metadata import MetadataPathFinder
 import discord, os , random, asyncio
 from discord.ext import commands, tasks
 from discord.utils import get
 
-from modules.bobross import rossQuotes, embedRossIcon, pickRandomLine
-from modules.bovonto import embedBovontoIcon, pitches, makePitch, pickRandomLine
 from modules.tarot_data import tarotData
 
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine, table, text
 from sqlalchemy.orm import Session
 
 
@@ -38,11 +37,15 @@ async def on_ready():
     known_commands = await client.tree.sync()
     print('Command tree synced. {0} commands in tree.'.format(len(known_commands)))
 
-engine = create_engine("sqlite+pysqlite:///db/butterbean.db", echo=True, future=True)
 
 greetMessage = "Welcome to the WATTBA-sistance! Please take your time to observe our rules and, if you're comfortable, use the **!callme** command to tag yourself with your pronouns. Available pronouns are **!callme he/him**, **!callme she/her**, **!callme they/them**, as well as several neopronouns. If you want to change your pronouns you can remove them with **!imnot** \n\nThere are several other roles you can **!join** too, like **!join streampiggies** to be notified of Eli's streams. Check them out by using **!listroles**. \n\nFeel free to reach out to any of our mods for any reason, they're always happy to talk: Criss (aka Criss or @Carissa) or Hugo (aka Furby or @hugs). \n\nThis server also uses this bot for meme purposes. Be on the lookout for memes you can send using by sending **!bb** and the name of the meme. You can find a list of those memes with **!beanfo**"
 timeyIcon = 'https://i.imgur.com/vtkIVnl.png'
 unapprovedDeny = "Uh uh uh! {0} didn't say the magic word!\nhttps://imgur.com/IiaYjzH.gif"
+
+
+#---------------- Database Init ----------------
+#Starts the db engine with sqlalchemy.
+engine = create_engine("sqlite+pysqlite:///db/butterbean.db", echo=True, future=True)
 
 #---------------- Helper functions ----------------
 # Cleans special characters off of a string. Returns string without any special charactes
@@ -62,15 +65,32 @@ async def checkApprovedUsers(user: str) -> bool:
     with Session(engine) as session:
         session.begin()
         try:
-            response = session.execute(text(lookupString))
+            response = session.execute(text(lookupString)).fethone()
         except:
             print('Failed to query approved_users')
-        res = []
-        for row in response:
-            res.append(row)
-        check = await cleanString(str(res[0]))
+        check = await cleanString(str(response[0]))
         if int(check):
             return True 
+
+async def getRowCount(tableName: str) -> int:
+    statement = "SELECT COUNT(*) FROM {}".format(tableName)
+    with Session(engine) as session:
+        result = session.execute(statement).fetchone()
+    return result[0]
+
+async def pickRandomRow(tableName: str, columnName: str) -> str:
+    totalRows = await getRowCount(tableName)
+    randomLine = random.randint(1,totalRows)
+    statement = "SELECT {} FROM {} WHERE id={};".format(columnName, tableName, randomLine)
+    with Session(engine) as session:
+        result = session.execute(statement).fetchone()
+    return result[0]
+
+async def createEmbedFromRandomLine(name: str, icon: str, tableName: str, columnName: str) -> str:
+    line = await pickRandomRow(tableName, columnName)
+    e = discord.Embed(description=line)
+    e.set_author(name=name, icon_url=icon)
+    return e
 
 # ---------------- Meme Management ----------------
 #Message Send with !bb arg
@@ -81,18 +101,14 @@ async def bb(ctx, meme: str):
         search = meme.lower()
         lookupString = "SELECT link FROM posts WHERE post_name LIKE '%{}%';".format(search)
         try:
-            response = session.execute(text(lookupString))
+            response = session.execute(text(lookupString)).fetchone()
         except:
             print('Failed to query posts for {}'.format(search))
         
         if response is None:
             await ctx.send("Sorry, this command doesn't exist.")
         else:
-            res = []
-            for row in response:
-                res.append(row)
-            
-            link = await cleanString(str(res[0]))
+            link = await cleanString(str(response[0]))
             await ctx.send(link)
 
 #Mods can add items to the list
@@ -163,14 +179,16 @@ async def resend(ctx):
 @client.hybrid_command(brief='Quote Bob Ross', description='Sends a Bob Ross quote')
 async def bobross(ctx):
 # Posts quotes of Bob Ross
-    await ctx.send(embed=pickRandomLine(name='Bob Ross',icon=embedRossIcon, lines= rossQuotes))
+    embedRossIcon = "http://i.imgur.com/OZLdaSn.png"
+    await ctx.send(embed=await createEmbedFromRandomLine(name='Bob Ross',icon=embedRossIcon, tableName='bobQuotes', columnName='quote'))
 
 
 # TODO #22 port this module to the db
 #Just sends a damn Bovonto pitch
 @client.hybrid_command(brief='Pitch Bovonto', description='Sends a Bovonto advertising pitch')
 async def bovonto(ctx):
-    await ctx.send(embed=pickRandomLine(name='Bovonto Bot',icon=embedBovontoIcon,lines=pitches))
+    embedBovontoIcon = 'https://imgur.com/8aCQlV5.png'
+    await ctx.send(embed=await createEmbedFromRandomLine(name='Bovonto Bot',icon=embedBovontoIcon, tableName='bovontoPitches', columnName='pitch'))
 
 #---------------- Role management functions ----------------
 #Adds a pronoun specific role
@@ -229,10 +247,6 @@ async def leave(ctx, old_role: str):
 async def listroles(ctx):
     rolesStr = ', '.join(map(lambda r: str(r), ctx.guild.roles))
     await ctx.send(rolesStr)
-
-#Creates a looped task to execute the Bovonto pitches regularly
-while bovontoSchedule == True:
-    client.loop.create_task(makePitch(client))
 
 #---------------- Tarot functions ----------------
 # single card draw

@@ -53,10 +53,10 @@ meta = MetaData()
 bobQuotes = Table(
     'bobQuotes', meta,
     Column('id', Integer, primary_key=True),
-    Column('qoute', String)
+    Column('quote', String)
 )
 
-meta.create_all()
+meta.create_all(engine)
 
 with Session(engine) as session:
     session.begin()

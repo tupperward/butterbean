@@ -11,7 +11,7 @@ from modules.bobross import rossQuotes, embedRossIcon, pickRandomLine
 from modules.bovonto import embedBovontoIcon, pitches, makePitch, pickRandomLine
 from modules.tarot_data import tarotData
 
-from sqlalchemy import create_engine, text, MetaData, Table, Column, String, Integer
+from sqlalchemy import create_engine, text
 from sqlalchemy.orm import Session
 
 
@@ -47,11 +47,7 @@ unapprovedDeny = "Uh uh uh! {0} didn't say the magic word!\nhttps://imgur.com/Ii
 
 #---------------- Database Init ----------------
 #Starts the db engine with sqlalchemy.
-#engine = create_engine("sqlite+pysqlite:///db/butterbean.db", echo=True, future=True)
-#meta = MetaData()
-
-
-
+engine = create_engine("sqlite+pysqlite:///db/butterbean.db", echo=True, future=True)
 
 #---------------- Helper functions ----------------
 # Cleans special characters off of a string. Returns string without any special charactes
@@ -71,13 +67,10 @@ async def checkApprovedUsers(user: str) -> bool:
     with Session(engine) as session:
         session.begin()
         try:
-            response = session.execute(text(lookupString))
+            response = session.execute(text(lookupString)).fethone()
         except:
             print('Failed to query approved_users')
-        res = []
-        for row in response:
-            res.append(row)
-        check = await cleanString(str(res[0]))
+        check = await cleanString(str(response[0]))
         if int(check):
             return True 
 
@@ -90,18 +83,14 @@ async def bb(ctx, meme: str):
         search = meme.lower()
         lookupString = "SELECT link FROM posts WHERE post_name LIKE '%{}%';".format(search)
         try:
-            response = session.execute(text(lookupString))
+            response = session.execute(text(lookupString)).fetchone()
         except:
             print('Failed to query posts for {}'.format(search))
         
         if response is None:
             await ctx.send("Sorry, this command doesn't exist.")
         else:
-            res = []
-            for row in response:
-                res.append(row)
-            
-            link = await cleanString(str(res[0]))
+            link = await cleanString(str(response[0]))
             await ctx.send(link)
 
 #Mods can add items to the list

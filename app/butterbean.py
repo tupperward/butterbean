@@ -2,6 +2,7 @@
 #author: Tupperward
 
 #Importing dependencies
+from importlib.metadata import MetadataPathFinder
 import discord, os , random, asyncio
 from discord.ext import commands, tasks
 from discord.utils import get
@@ -10,7 +11,7 @@ from modules.bobross import rossQuotes, embedRossIcon, pickRandomLine
 from modules.bovonto import embedBovontoIcon, pitches, makePitch, pickRandomLine
 from modules.tarot_data import tarotData
 
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine, text, MetaData, Table, Column, String, Integer
 from sqlalchemy.orm import Session
 
 
@@ -38,11 +39,32 @@ async def on_ready():
     known_commands = await client.tree.sync()
     print('Command tree synced. {0} commands in tree.'.format(len(known_commands)))
 
-engine = create_engine("sqlite+pysqlite:///db/butterbean.db", echo=True, future=True)
 
 greetMessage = "Welcome to the WATTBA-sistance! Please take your time to observe our rules and, if you're comfortable, use the **!callme** command to tag yourself with your pronouns. Available pronouns are **!callme he/him**, **!callme she/her**, **!callme they/them**, as well as several neopronouns. If you want to change your pronouns you can remove them with **!imnot** \n\nThere are several other roles you can **!join** too, like **!join streampiggies** to be notified of Eli's streams. Check them out by using **!listroles**. \n\nFeel free to reach out to any of our mods for any reason, they're always happy to talk: Criss (aka Criss or @Carissa) or Hugo (aka Furby or @hugs). \n\nThis server also uses this bot for meme purposes. Be on the lookout for memes you can send using by sending **!bb** and the name of the meme. You can find a list of those memes with **!beanfo**"
 timeyIcon = 'https://i.imgur.com/vtkIVnl.png'
 unapprovedDeny = "Uh uh uh! {0} didn't say the magic word!\nhttps://imgur.com/IiaYjzH.gif"
+
+
+#---------------- Database Init ----------------
+#Starts the db engine with sqlalchemy.
+engine = create_engine("sqlite+pysqlite:///db/butterbean.db", echo=True, future=True)
+meta = MetaData()
+
+bobQuotes = Table(
+    'bobQuotes', meta,
+    Column('id', Integer, primary_key=True),
+    Column('qoute', String)
+)
+
+meta.create_all()
+
+with Session(engine) as session:
+    session.begin()
+    for row in rossQuotes:
+        statement = "INSERT INTO bobQuotes (quote) VALUES ('{}')".format(row)
+        session.execute(statement)
+    session.commit()
+
 
 #---------------- Helper functions ----------------
 # Cleans special characters off of a string. Returns string without any special charactes

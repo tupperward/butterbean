@@ -47,23 +47,10 @@ unapprovedDeny = "Uh uh uh! {0} didn't say the magic word!\nhttps://imgur.com/Ii
 
 #---------------- Database Init ----------------
 #Starts the db engine with sqlalchemy.
-engine = create_engine("sqlite+pysqlite:///db/butterbean.db", echo=True, future=True)
-meta = MetaData()
+#engine = create_engine("sqlite+pysqlite:///db/butterbean.db", echo=True, future=True)
+#meta = MetaData()
 
-bobQuotes = Table(
-    'bobQuotes', meta,
-    Column('id', Integer, primary_key=True),
-    Column('quote', String)
-)
 
-meta.create_all(engine)
-
-with Session(engine) as session:
-    session.begin()
-    for row in rossQuotes:
-        statement = "INSERT INTO bobQuotes (quote) VALUES ('{}')".format(row)
-        session.execute(statement)
-    session.commit()
 
 
 #---------------- Helper functions ----------------

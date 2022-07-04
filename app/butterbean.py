@@ -7,11 +7,9 @@ import discord, os , random, asyncio
 from discord.ext import commands, tasks
 from discord.utils import get
 
-from modules.bobross import rossQuotes, embedRossIcon, pickRandomLine
-from modules.bovonto import embedBovontoIcon, pitches, makePitch, pickRandomLine
 from modules.tarot_data import tarotData
 
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine, table, text
 from sqlalchemy.orm import Session
 
 
@@ -73,6 +71,26 @@ async def checkApprovedUsers(user: str) -> bool:
         check = await cleanString(str(response[0]))
         if int(check):
             return True 
+
+async def getRowCount(tableName: str) -> int:
+    statement = "SELECT COUNT(*) FROM {}".format(tableName)
+    with Session(engine) as session:
+        result = session.execute(statement).fetchone()
+    return result[0]
+
+async def pickRandomRow(tableName: str, columnName: str) -> str:
+    totalRows = await getRowCount(tableName)
+    randomLine = random.randint(1,totalRows)
+    statement = "SELECT {} FROM {} WHERE id={};".format(columnName, tableName, randomLine)
+    with Session(engine) as session:
+        result = session.execute(statement).fetchone()
+    return result[0]
+
+async def createEmbedFromRandomLine(name: str, icon: str, tableName: str, columnName: str) -> str:
+    line = await pickRandomRow(tableName, columnName)
+    e = discord.Embed(description=line)
+    e.set_author(name=name, icon_url=icon)
+    return e
 
 # ---------------- Meme Management ----------------
 #Message Send with !bb arg
@@ -161,14 +179,16 @@ async def resend(ctx):
 @client.hybrid_command(brief='Quote Bob Ross', description='Sends a Bob Ross quote')
 async def bobross(ctx):
 # Posts quotes of Bob Ross
-    await ctx.send(embed=pickRandomLine(name='Bob Ross',icon=embedRossIcon, lines= rossQuotes))
+    embedRossIcon = "http://i.imgur.com/OZLdaSn.png"
+    await ctx.send(embed=await createEmbedFromRandomLine(name='Bob Ross',icon=embedRossIcon, tableName='bobQuotes', columnName='quote'))
 
 
 # TODO #22 port this module to the db
 #Just sends a damn Bovonto pitch
 @client.hybrid_command(brief='Pitch Bovonto', description='Sends a Bovonto advertising pitch')
 async def bovonto(ctx):
-    await ctx.send(embed=pickRandomLine(name='Bovonto Bot',icon=embedBovontoIcon,lines=pitches))
+    embedBovontoIcon = 'https://imgur.com/8aCQlV5.png'
+    await ctx.send(embed=await createEmbedFromRandomLine(name='Bovonto Bot',icon=embedBovontoIcon, tableName='bovontoPitches', columnName='pitch'))
 
 #---------------- Role management functions ----------------
 #Adds a pronoun specific role
@@ -227,10 +247,6 @@ async def leave(ctx, old_role: str):
 async def listroles(ctx):
     rolesStr = ', '.join(map(lambda r: str(r), ctx.guild.roles))
     await ctx.send(rolesStr)
-
-#Creates a looped task to execute the Bovonto pitches regularly
-while bovontoSchedule == True:
-    client.loop.create_task(makePitch(client))
 
 #---------------- Tarot functions ----------------
 # single card draw

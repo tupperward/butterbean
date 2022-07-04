@@ -6,10 +6,12 @@ __Prereqs__:
 - docker-compose or docker compose
 - set message_contents to True in Intents panel on the app page.
 
-This is some dumb bullshit I've hacked together without any research for the past like 3-4 years now. It's not good. Do not use this as an example of a quality discord bot in python. The main bot here is wildly out of date and likely not going to see too many new features. I brought it into line with Intents but there's a lot more work to make this a "modern" chatbot. I might return to it one day, but for now I'm going to put it to rest.
+This is some dumb bullshit I've hacked together without any research for the past like 3-4 years now. It's not good. Do not use this as an example of a quality discord bot in python. The main bot here is wildly out of date and likely not going to see too many new features. Jinx brought it into line with Intents but there's a lot more work to make this a "modern" chatbot.
 
-As it stands with this version, it can be self hosted. If you have a backup butterbean.sql just load it into `db/foo.sql` and get running.
+As it stands with this version, it can be self hosted. You can load your backup of the .db by placing it in `/app/config/`. It must be named `butterbean.db`.
 
-There a `.env` that you will have to complete as well. It's pretty self explanatory, the only thing you ened to add is your Bot's token. Right now, do not change any other variables there. I need to do a little bit of configuration for the restore script to get that to work. Or just remove it entirely but I hate publishing static values. If you have suggestions let me know.
+There a `.env` in `/app/config` that you will have to complete as well. Just provide the discord bot token in the `TOKEN` environment variable.
 
-Simply running `docker compose up -d` or `docker-compose up -d` will get you started.
+Once you've modified your `.env` file, running `docker compose up -d` or `docker-compose up -d` will get you started.
+
+A new image of this container is available every Monday at midnight. `0 0 * * 1` 

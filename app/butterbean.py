@@ -65,7 +65,7 @@ async def checkApprovedUsers(user: str) -> bool:
     with Session(engine) as session:
         session.begin()
         try:
-            response = session.execute(text(lookupString)).fethone()
+            response = session.execute(text(lookupString)).fetchone()
         except:
             print('Failed to query approved_users')
         check = await cleanString(str(response[0]))

@@ -1,7 +1,5 @@
 from enum import unique
 from tabnanny import check
-from modules.bobross import rossQuotes
-from modules.bovonto import pitches
 from sqlalchemy import CheckConstraint, DefaultClause, create_engine, String, Integer, Table,Column, MetaData
 from sqlalchemy.orm import Session
 

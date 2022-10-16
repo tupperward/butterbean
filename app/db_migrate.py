@@ -6,18 +6,6 @@ from sqlalchemy.orm import Session
 engine = create_engine('sqlite+pysqlite:///db/butterbean.db', echo=True, future=True)
 meta = MetaData()
 
-bobQuotes = Table(
-  'bobQuotes', meta,
-  Column('id', Integer, primary_key=True),
-  Column('quote', String)
-)
-
-bovontoPitches = Table(
-  'bovontoPitches', meta,
-  Column('id',Integer, primary_key=True),
-  Column('pitch',String)
-)
-
 # Transliterated from @JinxedFeline's work at https://gist.github.com/jinxedfeline/fc2e2aa25471d3ade5527bbdf6ad77d9
 # Create table permissions 
 permissions = Table(

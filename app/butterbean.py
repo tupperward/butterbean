@@ -9,7 +9,7 @@ from discord.utils import get
 
 from modules.tarot_data import tarotData
 
-from sqlalchemy import create_engine, table, text
+from sqlalchemy import create_engine, table, text, Table, Column, CheckConstraint, DefaultClause, String, Integer, MetaData, select, insert
 from sqlalchemy.orm import Session
 
 
@@ -23,7 +23,7 @@ intents.members = True
 intents.message_content = True  
 
 #-----------Intializing functions-----------#
-client = commands.Bot(command_prefix=('/','!'), description='Butterborg is online.', add=True, intents=intents)
+client = commands.Bot(command_prefix=('!'), description='Butterborg is online.', add=True, intents=intents)
 
 #-----------Intializing ready-----------#   
 @client.event
@@ -69,20 +69,50 @@ async def checkApprovedUsers(user: str) -> bool:
         except:
             print('Failed to query approved_users')
         check = await cleanString(str(response[0]))
-        if int(check):
-            return True 
+        return int(check)
 
-async def getRowCount(tableName: str) -> int:
-    statement = "SELECT COUNT(*) FROM {}".format(tableName)
+#-------------- Permissions Management ---------------
+meta = MetaData()
+permissions = Table(
+    'permissions', meta,
+    Column('user', String, unique=True, nullable=True, default=None), # A user name, Tupperward#5115 for example. One entry per user.
+    Column('role', String, unique=True, nullable=True, default=None), # A role name, she/her for example. One entry per role.
+    # -- We use Integer because Sqlite does not know Booleans and represents it with 1 and 0.
+    Column('manage_memes', Integer, default=0), # User may add/remove memes
+    Column('assign_roles', Integer, default=0), # User may add/remove roles on users
+    Column('bot_admin', Integer, default=0), # Has admin bot permissions. Probably should not guarantee right to assign roles.
+    # -- This role is not assignable by users on themselves
+    Column('is_user_settable', Integer, nullable=False, default=0),
+    # Ensure this is only set on roles
+    CheckConstraint('(("is_user_settable" == 1) AND ("role" IS NOT NULL)) OR ("is_user_settable" == 0)', name='is_user_settable requires a role'),
+    # This role can be set on users by someone with the assign_roles permission
+    # Note that this will not override permissions on the discord side, the bot is bound by which roles it as permissions to assign there 
+    Column('is_assignable', Integer, nullable=False, default=0),
+    # Ensure this is only set on roles
+    CheckConstraint('(("is_assignable" == 1) AND ("role" IS NOT NULL)) OR ("is_assignable" == 0)',name='is_assignable_requires_a_role'),
+    CheckConstraint('(("user" IS NOT NULL) AND ("role" IS NULL)) OR(("user" IS NULL) AND ("role" IS NOT NULL))',name='provide only one of: user or role'),
+)
+
+#TODO Turn the name input into an array and iterate over it until you find anything that meets the criteria.
+async def checkPerms(name, column: str, perm: str) -> bool: # name can be an array
+    initStatement: str = 'SELECT EXISTS(SELECT 1 FROM permissions WHERE {}="{}");'.format(column, name)
+    lookupString: str = 'SELECT {} FROM permissions WHERE {}="{}"'.format(perm, column, name)
+    lkpStr = select(permissions.c.perm).where(permissions.c.column == name)
     with Session(engine) as session:
-        result = session.execute(statement).fetchone()
-    return result[0]
+        returning = session.execute(text(initStatement)).fetchone()
+        if not returning:
+            createNewLine: str = 'INSERT INTO permissions ({}) VALUES ("{}");'.format(column, name)
+            session.execute(text(createNewLine))
+            return False
+        
+
 
 async def pickRandomRow(tableName: str, columnName: str) -> str:
-    totalRows = await getRowCount(tableName)
-    randomLine = random.randint(1,totalRows)
-    statement = "SELECT {} FROM {} WHERE id={};".format(columnName, tableName, randomLine)
     with Session(engine) as session:
+        allRows = "SELECT COUNT(*) FROM {}".format(tableName)
+        totalRows = session.execute(allRows).fetchone()
+        randomLine = random.randint(1,totalRows)
+        statement = "SELECT {} FROM {} WHERE id={};".format(columnName, tableName, randomLine)
         result = session.execute(statement).fetchone()
     return result[0]
 
@@ -123,6 +153,13 @@ async def add(ctx, name: str, url: str):
             await ctx.send("{} has been added to my necroborgic memories".format(name))
     else:
         await ctx.send(unapprovedDeny.format(ctx.message.author))
+
+@client.hybrid_command(brief='Add a trusted user', description='Gives a user permission to add/remove to Butterbean')
+async def adduser(ctx, name: str):
+    if await checkApprovedUsers(ctx.message.author):
+        with Session(engine) as session:
+            session.begin()
+            lookupString = "INSERT INTO approved_users(username)"
 
 #Mods can remove items from the list
 @client.hybrid_command(brief='Remove a meme', description='Removes a meme from my necroborgic memories, if you have permission')

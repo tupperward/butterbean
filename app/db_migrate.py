@@ -24,12 +24,12 @@ bovontoPitches = Table(
 # Create table permissions 
 permissions = Table(
   'permissions', meta,
-  Column('user', String, unique=True), # A user name, Tupperward#5115 for example. One entry per user.
-  Column('role', String, unique=True), # A role name, she/her for example. One entry per role.
+  Column('user', String, unique=True, nullable=True, default=None), # A user name, Tupperward#5115 for example. One entry per user.
+  Column('role', String, unique=True, nullable=True, default=None), # A role name, she/her for example. One entry per role.
   # -- We use Integer because Sqlite does not know Booleans and represents it with 1 and 0.
-  Column('manage_memes', Integer), # User may add/remove memes
-  Column('assign_roles', Integer), # User may add/remove roles on users
-  Column('bot_admin', Integer), # Has admin bot permissions. Probably should not guarantee right to assign roles.
+  Column('manage_memes', Integer, default=0), # User may add/remove memes
+  Column('assign_roles', Integer, default=0), # User may add/remove roles on users
+  Column('bot_admin', Integer, default=0), # Has admin bot permissions. Probably should not guarantee right to assign roles.
   # -- This role is not assignable by users on themselves
   Column('is_user_settable', Integer, nullable=False, default=0),
   # Ensure this is only set on roles

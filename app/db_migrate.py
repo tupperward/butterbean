@@ -42,16 +42,3 @@ permissions = Table(
 
 meta.create_all(engine)
 
-with Session(engine) as session:
-  session.begin()
-  for row in rossQuotes:
-    statement = "INSERT INTO bobQuotes (quote) VALUES ('{}')".format(row)
-    session.execute(statement)
-  session.commit()
-
-with Session(engine) as session:
-  session.begin()
-  for row in pitches:
-    statement = "INSERT INTO bovontoPitches (pitch) VALUES ('{}')".format(row)
-    session.execute(statement)
-  session.commit()

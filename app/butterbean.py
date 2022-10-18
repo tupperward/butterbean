@@ -8,6 +8,7 @@ from discord.ext import commands, tasks
 from discord.utils import get
 
 from modules.tarot_data import tarotData
+from modules.permissions import checkPerms, addPerms, removePerms
 
 from sqlalchemy import create_engine, table, text, Table, Column, CheckConstraint, DefaultClause, String, Integer, MetaData, select, insert
 from sqlalchemy.orm import Session
@@ -70,42 +71,6 @@ async def checkApprovedUsers(user: str) -> bool:
             print('Failed to query approved_users')
         check = await cleanString(str(response[0]))
         return int(check)
-
-#-------------- Permissions Management ---------------
-meta = MetaData()
-permissions = Table(
-    'permissions', meta,
-    Column('user', String, unique=True, nullable=True, default=None), # A user name, Tupperward#5115 for example. One entry per user.
-    Column('role', String, unique=True, nullable=True, default=None), # A role name, she/her for example. One entry per role.
-    # -- We use Integer because Sqlite does not know Booleans and represents it with 1 and 0.
-    Column('manage_memes', Integer, default=0), # User may add/remove memes
-    Column('assign_roles', Integer, default=0), # User may add/remove roles on users
-    Column('bot_admin', Integer, default=0), # Has admin bot permissions. Probably should not guarantee right to assign roles.
-    # -- This role is not assignable by users on themselves
-    Column('is_user_settable', Integer, nullable=False, default=0),
-    # Ensure this is only set on roles
-    CheckConstraint('(("is_user_settable" == 1) AND ("role" IS NOT NULL)) OR ("is_user_settable" == 0)', name='is_user_settable requires a role'),
-    # This role can be set on users by someone with the assign_roles permission
-    # Note that this will not override permissions on the discord side, the bot is bound by which roles it as permissions to assign there 
-    Column('is_assignable', Integer, nullable=False, default=0),
-    # Ensure this is only set on roles
-    CheckConstraint('(("is_assignable" == 1) AND ("role" IS NOT NULL)) OR ("is_assignable" == 0)',name='is_assignable_requires_a_role'),
-    CheckConstraint('(("user" IS NOT NULL) AND ("role" IS NULL)) OR(("user" IS NULL) AND ("role" IS NOT NULL))',name='provide only one of: user or role'),
-)
-
-#TODO Turn the name input into an array and iterate over it until you find anything that meets the criteria.
-async def checkPerms(name, column: str, perm: str) -> bool: # name can be an array
-    initStatement: str = 'SELECT EXISTS(SELECT 1 FROM permissions WHERE {}="{}");'.format(column, name)
-    lookupString: str = 'SELECT {} FROM permissions WHERE {}="{}"'.format(perm, column, name)
-    lkpStr = select(permissions.c.perm).where(permissions.c.column == name)
-    with Session(engine) as session:
-        returning = session.execute(text(initStatement)).fetchone()
-        if not returning:
-            createNewLine: str = 'INSERT INTO permissions ({}) VALUES ("{}");'.format(column, name)
-            session.execute(text(createNewLine))
-            return False
-        
-
 
 async def pickRandomRow(tableName: str, columnName: str) -> str:
     with Session(engine) as session:

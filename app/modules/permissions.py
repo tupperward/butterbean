@@ -1,10 +1,12 @@
+import array
+from ctypes import Array
 from sqlalchemy import create_engine, table, text, Table, Column, CheckConstraint, DefaultClause, String, Integer, MetaData
 from sqlalchemy.orm import Session
 
 engine = create_engine("sqlite+pysqlite:///db/butterbean.db", echo=True, future=True)
-
-#-------------- Permissions Management ---------------
 meta = MetaData()
+
+# Table for permissions management
 permissions = Table(
     'permissions', meta,
     Column('user', String, unique=True, nullable=True, ), # A user name, Tupperward#5115 for example. One entry per user.
@@ -25,24 +27,26 @@ permissions = Table(
     CheckConstraint('(("user" IS NOT NULL) AND ("role" IS NULL)) OR(("user" IS NULL) AND ("role" IS NOT NULL))',name='provide only one of: user or role'),
 )
 
-def create_all_tables():
-  meta.create_all(engine)
+def create_all_tables(): # Prevents the table from being created unless it needs to be. Can be imported and called from main app.
+  meta.create_all(engine) # Creates the above table.
 
-#TODO Turn the name input into an array and iterate over it until you find anything that meets the criteria.
-async def checkPerms(name, column: str, perm: str) -> bool: # name can be an array
-    initStatement: str = 'SELECT EXISTS(SELECT 1 FROM permissions WHERE {}="{}");'.format(column, name)
-    lookupStmnt: str = 'SELECT {} FROM permissions WHERE {}="{}"'.format(perm, column, name)
-    with Session(engine) as session:
-        # Check to see if the user or role is in the database already.
-        returning = session.execute(text(initStatement)).fetchone() #Python will also natively interpret Sqlite's 1 as True. Thanks, Python!
-        # If this is a novel user or role, create a new entry in the database to track their permission state in the future.
-        if not returning: 
-            # Because all permission levels default to 0, creating a new row for a user or role guarantees that role has minimum permissions unless explicitly changed by an admin.
-            createNewRow: str = 'INSERT INTO permissions ({}) VALUES ("{}");'.format(column, name)
-            session.execute(text(createNewRow))
-            return False
-        result = session.execute(text(lookupStmnt))
-    return bool(result)
+async def checkPerms(name: list, column: str, perm: str) -> bool: 
+  with Session(engine) as session:
+    for item in name: 
+      initStatement: str = 'SELECT EXISTS(SELECT 1 FROM permissions WHERE {}="{}");'.format(column, item)
+      lookupStmnt: str = 'SELECT {} FROM permissions WHERE {}="{}"'.format(perm, column, item)
+      # Check to see if the user or role is in the database already.
+      returning = session.execute(text(initStatement)).fetchone() #Python will also natively interpret Sqlite's 1 as True. Thanks, Python!
+      # If this is a novel user or role, create a new entry in the database to track their permission state in the future.
+      if not returning: 
+          # Because all permission levels default to 0, creating a new row for a user or role guarantees that role has minimum permissions unless explicitly changed by an admin.
+          createNewRow: str = 'INSERT INTO permissions ({}) VALUES ("{}");'.format(column, item)
+          session.execute(text(createNewRow))
+          return False #If you didn't exist before now, you sure as hell didn't have permissions set.
+      result = session.execute(text(lookupStmnt)) # Save the lookup to result
+      if result: # If result for any item in the list is 1 
+        return result # return True (1)
+  return result # If it gets to this point, result must be False.
 
 async def addPerms(name: str, column: str, perm: str): # Should only be called on one role at a time.
   # ? Should this be an UPDATE or INSERT? @JinxedFeline

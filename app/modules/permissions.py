@@ -27,7 +27,7 @@ permissions = Table(
     CheckConstraint('(("user" IS NOT NULL) AND ("role" IS NULL)) OR(("user" IS NULL) AND ("role" IS NOT NULL))',name='provide only one of: user or role'),
 )
 
-def create_all_tables(): # Prevents the table from being created unless it needs to be. Can be imported and called from main app.
+def create_permissions_table(): # Prevents the table from being created unless it needs to be. Can be imported and called from main app.
   meta.create_all(engine) # Creates the above table.
 
 async def checkPerms(name: list, column: str, perm: str) -> bool: 

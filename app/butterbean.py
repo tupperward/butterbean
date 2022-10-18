@@ -8,7 +8,7 @@ from discord.ext import commands, tasks
 from discord.utils import get
 
 from modules.tarot_data import tarotData
-from modules.permissions import checkPerms, addPerms, removePerms
+from modules.permissions import checkPerms, addPerms, removePerms, create_permissions_table
 
 from sqlalchemy import create_engine, table, text, Table, Column, CheckConstraint, DefaultClause, String, Integer, MetaData, select, insert
 from sqlalchemy.orm import Session

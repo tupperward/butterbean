@@ -7,7 +7,7 @@ engine = create_engine("sqlite+pysqlite:///db/butterbean.db", echo=True, future=
 meta = MetaData()
 
 # Table for permissions management
-permissions = Table(
+permissionsTable = Table(
     'permissions', meta,
     Column('user', String, unique=True, nullable=True, ), # A user name, Tupperward#5115 for example. One entry per user.
     Column('role', String, unique=True, nullable=True, server_default=None), # A role name, she/her for example. One entry per role.

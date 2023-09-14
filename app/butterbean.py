@@ -40,7 +40,8 @@ async def on_ready():
 
 mod_name = os.environ.get('MOD_NAME')
 bot_mod_name = os.environ.get('BOT_MOD_NAME')
-greetMessage = "Welcome to the WATTBA-sistance! Please take your time to observe our rules and, if you're comfortable, use the **!callme** command to tag yourself with your pronouns. Available pronouns are **!callme he/him**, **!callme she/her**, **!callme they/them**, as well as several neopronouns. If you want to change your pronouns you can remove them with **!imnot** \n\nThere are several other roles you can **!join** too, like **!join streampiggies** to be notified of Eli's streams. Check them out by using **!listroles**. \n\nFeel free to reach out to any of our mods for any reason, they're always happy to talk: criss (@.crissxcore), mx. president (@kbuechner) or AR (@armoredrobot). \n\nThis server also uses this bot for meme purposes. Be on the lookout for memes you can send using by sending **!bb** and the name of the meme. You can find a list of those memes with **!beanfo**. __I'll be honest, most of these are currently broken because of imgur deleting basically everything__."
+restricted_roles = ['sheriff','admin','Da Hosts','Dr. Wily','technomancer','PatreonBot','bird-expert','time-out-corner','Butterborg']
+greetMessage = "Welcome to the WATTBA-sistance! Please take your time to observe our rules and, if you're comfortable, use the **/callme** command to tag yourself with your pronouns. Available pronouns are **/callme he/him**, **/callme she/her**, **/callme they/them**, as well as several neopronouns. If you want to change your pronouns you can remove them with **/imnot** \n\nThere are several other roles you can **/join** too, like **/join streampiggies** to be notified of Eli's streams. Check them out by using **/listroles**. \n\nFeel free to reach out to any of our mods for any reason, they're always happy to talk: criss (@.crissxcore), mx. president (@kbuechner) or AR (@armoredrobot). \n\nThis server also uses this bot for meme purposes. Be on the lookout for memes you can send using by sending **/bb** and the name of the meme. You can find a list of those memes with **/beanfo**. __I'll be honest, most of these are currently broken because of imgur deleting basically everything__."
 timeyIcon = 'https://i.imgur.com/vtkIVnl.png'
 unapprovedDeny = "Uh uh uh! {0} didn't say the magic word!\nhttps://imgur.com/IiaYjzH.gif"
 
@@ -61,7 +62,6 @@ async def cleanString(res: str) -> str:
 
 # Checks to determine if user is approved to add/remove to Butterbean. 
 #* Returns Boolean
-# TODO #23 Change this to checking for a `deputy` level role instead of using the database. 
 async def has_role(member, role_name) -> bool:
     # Check if the member object has the role with the specified name
     role = discord.utils.get(member.roles, name=role_name)
@@ -168,7 +168,6 @@ async def resend(ctx):
     eMessage.set_author(name='Timey', icon_url=timeyIcon)
     await ctx.send(embed=eMessage)
 
-# TODO #21 port this module to the db
 # ---------------- Sending random messages ----------------
 #Bob Ross quote
 @client.hybrid_command(brief='Quote Bob Ross', description='Sends a Bob Ross quote')
@@ -177,8 +176,6 @@ async def bobross(ctx):
     embedRossIcon = "http://i.imgur.com/OZLdaSn.png"
     await ctx.send(embed=await createEmbedFromRandomLine(name='Bob Ross',icon=embedRossIcon, tableName='bobQuotes', columnName='quote'))
 
-
-# TODO #22 port this module to the db
 #Just sends a damn Bovonto pitch
 @client.hybrid_command(brief='Pitch Bovonto', description='Sends a Bovonto advertising pitch')
 async def bovonto(ctx):
@@ -192,10 +189,10 @@ async def callme(ctx, pronoun: str):
     user = ctx.message.author
     genderId = get(ctx.guild.roles, name=pronoun)
     #This checks the list of roles on the server and the order they're in. Do not fuck with the order on the server or this will fuck up.
-    upperDemarc = get(ctx.guild.roles, name='he/him'); lowerDemarc = get(ctx.guild.roles, name='Catillac Cat')
-    if genderId > upperDemarc or genderId <= lowerDemarc:
+    
+    if genderId in restricted_roles:
         await ctx.send('<:rudy:441453959215972352> Oooooh, {0} isn\'t as sneaky as they think they are. '.format(user.mention))
-    elif genderId <= upperDemarc and genderId > lowerDemarc:
+    else:
         userRoles = ctx.author.roles
         if genderId in userRoles:
             await ctx.send('<:rudy:441453959215972352> You already have {0} pronouns.'.format(pronoun))
@@ -219,8 +216,7 @@ async def imnot(ctx, old_pronoun: str):
 async def join(ctx, new_role: str):
     user = ctx.message.author
     roleToAdd = get(ctx.guild.roles, name=new_role.lower())
-    lowerDemarc = get(ctx.guild.roles, name='Catillac Cat')
-    if roleToAdd >= lowerDemarc:
+    if roleToAdd in restricted_roles:
         await ctx.send("<:rudy:441453959215972352> That's not what this is for.")
     else:
         await user.add_roles(roleToAdd)

@@ -258,5 +258,67 @@ async def tarot(ctx):
         else:
             await ctx.send('Oops, I do not seem to have a valid tarot deck loaded, sorry!')
 
+#----- Pronoun Picker -----
+
+# our pronoun picker feature needs a "view" to be able to display some UI components; this one just inherits straight from
+#  discord.ui.View, but adds an extra constructor, since we need to pass the interaction along when creating the dropdown -
+#  otherwise, it won't have any way to find out what server the request came from
+class PronounPickerView(discord.ui.View):
+    def __init__(self, interaction: discord.Interaction):
+        super().__init__()
+
+        # add the dropdown to our view
+        self.add_item(PronounPicker(interaction))
+
+# this is the dropdown used to select your roles and placed in the view
+class PronounPicker(discord.ui.Select):
+    def __init__(self, interaction: discord.Interaction):
+
+        # get all the roles the server tells us we can set on people (that are not also in the restricted role list, for safety)
+        valid_pronouns = list(filter(lambda r: r.is_assignable() and (not r.name in restricted_roles), interaction.guild.roles))
+
+        # Set the options that will be presented inside the dropdown
+        options = []
+
+        # TODO: if there's no emoji set for the role, perhaps we can try to map role colour to a coloured shape emoji?
+        for p in valid_pronouns:
+            l = p.name            # role name
+            e = p.unicode_emoji   # associated emoji, if any
+            checked = (p in interaction.user.roles) # if the user currently has this role, present a checked box
+            options.append(discord.SelectOption(label=l, emoji=e, description=f'Tag me as {l}, please', default=checked))
+
+        # construct a Select object for the UI to use which the user can select any number of options from, including zero
+        #   to remove all tags
+        super().__init__(placeholder='Choose which pronoun sets you\'d like to have', min_values=0, max_values=len(options), options=options)
+   
+    # when the user finishes making their selection, this callback fires
+    async def callback(self, interaction: discord.Interaction):
+
+        # get all the roles the server tells us we can set on people (that are not also in the restricted role list, for safety)
+        valid_pronouns = list(filter(lambda r: r.is_assignable() and (not r.name in restricted_roles), interaction.guild.roles))
+
+        # check whether we need to set and/or unset each pronoun
+        for p in valid_pronouns:
+            if p.name in self.values:
+                # this pronoun is in the list of wanted pronouns, add it if necessary
+                if not (p in interaction.user.roles):
+                    await interaction.user.add_roles(p, reason=f'Added by {interaction.user.name} via pronoun picker')
+            else:
+                # this pronoun is not wanted, remove it if necessary
+                if (p in interaction.user.roles):
+                    await interaction.user.remove_roles(p, reason=f'Removed by {interaction.user.name} via pronoun picker')
+
+        # show confirmation to the user (that only the user can see)
+        await interaction.response.send_message(f'Your pronouns are now {", ".join(self.values) if len(self.values) > 0 else "(none)"}', ephemeral=True)
+
+
+# add the slash command to the bot's command tree
+@client.tree.command(description='Get a menu to pick your pronouns from')
+async def pickpronoun(interaction: discord.Interaction):
+    # create the UI and show it to the user (and only the user, via the ephemeral flag)
+    view = PronounPickerView(interaction)
+    await interaction.response.send_message('Please choose any number of pronouns:', view=view, ephemeral=True)
+
+
 #Actually running the damn thing
 client.run(os.environ['TOKEN'])

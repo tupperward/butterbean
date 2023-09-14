@@ -37,7 +37,8 @@ async def on_ready():
     known_commands = await client.tree.sync()
     print('Command tree synced. {0} commands in tree.'.format(len(known_commands)))
 
-
+mod_name = os.environ.get('MOD_NAME')
+bot_mod_name = os.environ.get('BOT_MOD_NAME')
 greetMessage = "Welcome to the WATTBA-sistance! Please take your time to observe our rules and, if you're comfortable, use the **!callme** command to tag yourself with your pronouns. Available pronouns are **!callme he/him**, **!callme she/her**, **!callme they/them**, as well as several neopronouns. If you want to change your pronouns you can remove them with **!imnot** \n\nThere are several other roles you can **!join** too, like **!join streampiggies** to be notified of Eli's streams. Check them out by using **!listroles**. \n\nFeel free to reach out to any of our mods for any reason, they're always happy to talk: Criss (aka Criss or @Carissa) or Hugo (aka Furby or @hugs). \n\nThis server also uses this bot for meme purposes. Be on the lookout for memes you can send using by sending **!bb** and the name of the meme. You can find a list of those memes with **!beanfo**"
 timeyIcon = 'https://i.imgur.com/vtkIVnl.png'
 unapprovedDeny = "Uh uh uh! {0} didn't say the magic word!\nhttps://imgur.com/IiaYjzH.gif"
@@ -60,17 +61,10 @@ async def cleanString(res: str) -> str:
 # Checks to determine if user is approved to add/remove to Butterbean. 
 #* Returns Boolean
 # TODO #23 Change this to checking for a `deputy` level role instead of using the database. 
-async def checkApprovedUsers(user: str) -> bool:
-    lookupString = "SELECT COUNT(1) FROM approved_users WHERE username LIKE  '%{}%';".format(user)
-    with Session(engine) as session:
-        session.begin()
-        try:
-            response = session.execute(text(lookupString)).fetchone()
-        except:
-            print('Failed to query approved_users')
-        check = await cleanString(str(response[0]))
-        if int(check):
-            return True 
+async def has_role(member, role_name) -> bool:
+    # Check if the member object has the role with the specified name
+    role = discord.utils.get(member.roles, name=role_name)
+    return role is not None
 
 async def getRowCount(tableName: str) -> int:
     statement = "SELECT COUNT(*) FROM {}".format(tableName)
@@ -114,7 +108,7 @@ async def bb(ctx, meme: str):
 #Mods can add items to the list
 @client.hybrid_command(brief='Add a meme', description='Adds a meme to my necroborgic memories, if you have permission')
 async def add(ctx, name: str, url: str):
-    if await checkApprovedUsers(ctx.message.author):
+    if await has_role(member=ctx.message.author, role_name=mod_name) or await has_role(member=ctx.message.author, role_name=bot_mod_name):
         with Session(engine) as session:
             session.begin()
             lookupString = "INSERT INTO posts (post_name, link) VALUES ('{0}','{1}');".format(name, url)
@@ -127,7 +121,7 @@ async def add(ctx, name: str, url: str):
 #Mods can remove items from the list
 @client.hybrid_command(brief='Remove a meme', description='Removes a meme from my necroborgic memories, if you have permission')
 async def remove (ctx, meme: str): 
-    if await checkApprovedUsers(ctx.message.author):
+    if await has_role(member=ctx.message.author, role_name=mod_name) or await has_role(member=ctx.message.author, role_name=bot_mod_name):
         with Session(engine) as session:
             session.begin()
             lookupString = "DELETE FROM posts WHERE post_name LIKE '%{}%';".format(meme)

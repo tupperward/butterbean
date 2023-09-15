@@ -186,6 +186,21 @@ async def on_raw_reaction_add(payload):
                 await member.add_roles(role)
                 print(f"{member.name} has been assigned the {role_name} role.")
 
+@client.event 
+async def on_raw_reaction_remove(payload):
+    if payload.channel_id == welcome_channel_id:
+        guild = client.get_channel(payload.channel_id).guild
+        member = guild.get_member(payload.user_id)
+
+        emoji = payload.emoji.name 
+        if emoji in role_emojis:
+            role_name = role_emojis[emoji]
+            role = discord.utils.get(guild.roles, name=role_name)
+
+            if role and role in member.roles: 
+                await member.remove_roles(role)
+                print(f"{member.name} has removed the {role_name} role.")               
+
 #Welcomes a new member
 @client.event
 async def on_member_join(member):

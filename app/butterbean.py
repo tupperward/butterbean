@@ -274,8 +274,8 @@ class PronounPickerView(discord.ui.View):
 class PronounPicker(discord.ui.Select):
     def __init__(self, interaction: discord.Interaction):
 
-        # get all the roles the server tells us we can set on people (that are not also in the restricted role list, for safety)
-        valid_pronouns = list(filter(lambda r: r.is_assignable() and (not r.name in restricted_roles), interaction.guild.roles))
+        # get all the settable roles that look like pronouns
+        valid_pronouns = list(filter(lambda r: r.is_assignable() and (r.name.find('/') > -1) and (not r.name in restricted_roles), interaction.guild.roles))
 
         # Set the options that will be presented inside the dropdown
         options = []
@@ -294,8 +294,8 @@ class PronounPicker(discord.ui.Select):
     # when the user finishes making their selection, this callback fires
     async def callback(self, interaction: discord.Interaction):
 
-        # get all the roles the server tells us we can set on people (that are not also in the restricted role list, for safety)
-        valid_pronouns = list(filter(lambda r: r.is_assignable() and (not r.name in restricted_roles), interaction.guild.roles))
+        # get all the settable roles that look like pronouns
+        valid_pronouns = list(filter(lambda r: r.is_assignable() and (r.name.find('/') > -1) and (not r.name in restricted_roles), interaction.guild.roles))
 
         # check whether we need to set and/or unset each pronoun
         for p in valid_pronouns:

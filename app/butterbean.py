@@ -41,6 +41,25 @@ async def on_ready():
 mod_name = os.environ.get('MOD_NAME')
 bot_mod_name = os.environ.get('BOT_MOD_NAME')
 restricted_roles = ['sheriff','admin','Da Hosts','Dr. Wily','technomancer','PatreonBot','bird-expert','time-out-corner','Butterborg']
+welcome_channel_id = 465991895693393929
+emojis = ['😎', '😇', '😊', '🧐', '🤩', '😏', '😩', '😤', '👐', '🤟', '👏', '🖖', '🙌', '🤙', '🦾']
+role_emojis = {
+    f"{emojis[0]}": "any/all",
+    f"{emojis[1]}": "she/",
+    f"{emojis[2]}": "they/",
+    f"{emojis[3]}": "xe/",
+    f"{emojis[4]}": "ze/",
+    f"{emojis[5]}": "fae/",
+    f"{emojis[6]}": "it/",
+    f"{emojis[7]}": "he/",
+    f"{emojis[8]}": "/him",
+    f"{emojis[9]}": "/her",
+    f"{emojis[10]}": "/them",
+    f"{emojis[11]}": "/xer",
+    f"{emojis[12]}": "/zir",
+    f"{emojis[13]}": "/faer",
+    f"{emojis[14]}": "/its",
+}
 greetMessage = "Welcome to the WATTBA-sistance! Please take your time to observe our rules and, if you're comfortable, use the **/callme** command to tag yourself with your pronouns. Available pronouns are **/callme he/him**, **/callme she/her**, **/callme they/them**, as well as several neopronouns. If you want to change your pronouns you can remove them with **/imnot** \n\nThere are several other roles you can **/join** too, like **/join streampiggies** to be notified of Eli's streams. Check them out by using **/listroles**. \n\nFeel free to reach out to any of our mods for any reason, they're always happy to talk: criss (@.crissxcore), mx. president (@kbuechner) or AR (@armoredrobot). \n\nThis server also uses this bot for meme purposes. Be on the lookout for memes you can send using by sending **/bb** and the name of the meme. You can find a list of those memes with **/beanfo**. __I'll be honest, most of these are currently broken because of imgur deleting basically everything__."
 timeyIcon = 'https://i.imgur.com/vtkIVnl.png'
 unapprovedDeny = "Uh uh uh! {0} didn't say the magic word!\nhttps://imgur.com/IiaYjzH.gif"
@@ -152,21 +171,38 @@ async def beanfo(ctx):
 
 
 # ---------------- New Member Welcome ----------------
+@client.event 
+async def on_raw_reaction_add(payload):
+    if payload.channel_id == welcome_channel_id:
+        guild = client.get.guild(payload.guild_id)
+        member = guild.get_member(payload.user_id)
+
+        emoji = payload.emoji.name 
+        if emoji in role_emojis:
+            role_name = role_emojis[emoji]
+            role = discord.utils.get(guild.roles, name=role_name)
+
+            if role: 
+                await member.add_roles(role)
+                print(f"{member.name} has been assigned the {role_name} role.")
+
 #Welcomes a new member
 @client.event
 async def on_member_join(member):
     guild = member.guild
     if guild.system_channel is not None:
-        eMessage = discord.Embed(description="{0.mention}! {1}".format(member, greetMessage))
-        eMessage.set_author(name='Timey', icon_url=timeyIcon)
-        await guild.system_channel.send(embed=eMessage)
+        embed = discord.Embed(description=f"{on_member_join.mention}! {greetMessage}")
+        embed.set_author(name='Timey', icon_url=timeyIcon)
+        await guild.system_channel.send(embed=embed)
 
 #If needed, will resend the welcome message
 @client.hybrid_command(brief='Resend welcome message', description='Sends my welcome message again, in case a new member missed it')
-async def resend(ctx):
-    eMessage = discord.Embed(description="{0}".format(greetMessage))
-    eMessage.set_author(name='Timey', icon_url=timeyIcon)
-    await ctx.send(embed=eMessage)
+async def welcome(ctx):
+    embed = discord.Embed(description=f"{greetMessage}")
+    embed.set_author(name='Timey', icon_url=timeyIcon)
+    message = await ctx.send(embed=embed)
+    for emoji in emojis:
+        await message.add_reaction(emoji)
 
 # ---------------- Sending random messages ----------------
 #Bob Ross quote
@@ -181,35 +217,6 @@ async def bobross(ctx):
 async def bovonto(ctx):
     embedBovontoIcon = 'https://imgur.com/8aCQlV5.png'
     await ctx.send(embed=await createEmbedFromRandomLine(name='Bovonto Bot',icon=embedBovontoIcon, tableName='bovontoPitches', columnName='pitch'))
-
-#---------------- Role management functions ----------------
-#Adds a pronoun specific role
-@client.hybrid_command(brief='Add pronoun role', description='Add a pronoun role to yourself')
-async def callme(ctx, pronoun: str):
-    user = ctx.message.author
-    genderId = get(ctx.guild.roles, name=pronoun)
-    #This checks the list of roles on the server and the order they're in. Do not fuck with the order on the server or this will fuck up.
-    
-    if genderId in restricted_roles:
-        await ctx.send('<:rudy:441453959215972352> Oooooh, {0} isn\'t as sneaky as they think they are. '.format(user.mention))
-    else:
-        userRoles = ctx.author.roles
-        if genderId in userRoles:
-            await ctx.send('<:rudy:441453959215972352> You already have {0} pronouns.'.format(pronoun))
-        if genderId not in userRoles:
-            await user.add_roles(genderId)
-            await ctx.send('<:heathsalute:482273509951799296> Comrade {0} wants to be called {1}.'.format(user.mention, pronoun))
-
-#Removes a pronoun specific role          
-@client.hybrid_command(brief='Remove pronoun role', description='Remove a pronoun role from yourself')
-async def imnot(ctx, old_pronoun: str):
-    user = ctx.message.author
-    roleToRemove = get(ctx.guild.roles, name=old_pronoun)
-    userRoles = ctx.author.roles
-    await user.remove_roles(roleToRemove)
-    await ctx.send('<:heathsalute:482273509951799296> Comrade {0} no longer wants to be called {1}.'.format(user.mention, old_pronoun))
-    if roleToRemove not in userRoles:
-        await ctx.send("<:rudy:441453959215972352> You never picked those pronouns.")
 
 #Adds a non-pronoun specific role
 @client.hybrid_command(brief='Add other opt-in role', description='Join one of the other role-based groups')

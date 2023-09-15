@@ -174,7 +174,7 @@ async def beanfo(ctx):
 @client.event 
 async def on_raw_reaction_add(payload):
     if payload.channel_id == welcome_channel_id:
-        guild = client.get.guild(payload.guild_id)
+        guild = client.get_channel(payload.channel_id).guild
         member = guild.get_member(payload.user_id)
 
         emoji = payload.emoji.name 

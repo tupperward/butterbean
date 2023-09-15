@@ -45,13 +45,13 @@ welcome_channel_id = 465991895693393929
 emojis = ['😎', '😇', '😊', '🧐', '🤩', '😏', '😩', '😤', '👐', '🤟', '👏', '🖖', '🙌', '🤙', '🦾']
 role_emojis = {
     f"{emojis[0]}": "any/all",
-    f"{emojis[1]}": "she/",
-    f"{emojis[2]}": "they/",
-    f"{emojis[3]}": "xe/",
-    f"{emojis[4]}": "ze/",
-    f"{emojis[5]}": "fae/",
-    f"{emojis[6]}": "it/",
-    f"{emojis[7]}": "he/",
+    f"{emojis[1]}": "he/",
+    f"{emojis[2]}": "she/",
+    f"{emojis[3]}": "they/",
+    f"{emojis[4]}": "xe/",
+    f"{emojis[5]}": "ze/",
+    f"{emojis[6]}": "fae/",
+    f"{emojis[7]}": "it/",
     f"{emojis[8]}": "/him",
     f"{emojis[9]}": "/her",
     f"{emojis[10]}": "/them",
@@ -60,7 +60,7 @@ role_emojis = {
     f"{emojis[13]}": "/faer",
     f"{emojis[14]}": "/its",
 }
-greetMessage = "Welcome to the WATTBA-sistance! Please take your time to observe our rules and, if you're comfortable, use the **/callme** command to tag yourself with your pronouns. Available pronouns are **/callme he/him**, **/callme she/her**, **/callme they/them**, as well as several neopronouns. If you want to change your pronouns you can remove them with **/imnot** \n\nThere are several other roles you can **/join** too, like **/join streampiggies** to be notified of Eli's streams. Check them out by using **/listroles**. \n\nFeel free to reach out to any of our mods for any reason, they're always happy to talk: criss (@.crissxcore), mx. president (@kbuechner) or AR (@armoredrobot). \n\nThis server also uses this bot for meme purposes. Be on the lookout for memes you can send using by sending **/bb** and the name of the meme. You can find a list of those memes with **/beanfo**. __I'll be honest, most of these are currently broken because of imgur deleting basically everything__."
+greetMessage = "Welcome to the WATTBA-sistance! Please take your time to observe our rules and, if you're comfortable, use the **/pickpronoun** command to privately tag yourself with your pronouns." + "\n\nYou can also react to this message with your pronouns. This server allows you to set a primary and secondary pronoun role, with your name changing color to reflect your primary pronouns." + "\n**Primary Pronouns:**\n😎: `any/all`  😇: `he/` 😊: `she/` 🧐: `they/` 🤩: `xe/` 😏: `ze/` 😩: `fae/` 😤: `it/`" +  "\n\n**Secondary Pronouns:**\n 👐: `/him` 🤟: `/her` 👏: `/them` 🖖: `/xer` 🙌: `/zir` 🤙: `/faer` 🦾: `/its`" + "\n\nFeel free to reach out to any of our mods for any reason, they're always happy to talk: criss (@.crissxcore), mx. president (@kbuechner) or AR (@armoredrobot)." + "\n\nThis server also uses this bot for meme purposes. Be on the lookout for memes you can send using by sending **/bb** and the name of the meme. You can find a list of those memes with **/beanfo**. __I'll be honest, most of these are currently broken because of imgur deleting basically everything__."
 timeyIcon = 'https://i.imgur.com/vtkIVnl.png'
 unapprovedDeny = "Uh uh uh! {0} didn't say the magic word!\nhttps://imgur.com/IiaYjzH.gif"
 
@@ -193,7 +193,9 @@ async def on_member_join(member):
     if guild.system_channel is not None:
         embed = discord.Embed(description=f"{on_member_join.mention}! {greetMessage}")
         embed.set_author(name='Timey', icon_url=timeyIcon)
-        await guild.system_channel.send(embed=embed)
+        message = await guild.system_channel.send(embed=embed)
+        for emoji in emojis:
+            await message.add_reaction(emoji)
 
 #If needed, will resend the welcome message
 @client.hybrid_command(brief='Resend welcome message', description='Sends my welcome message again, in case a new member missed it')

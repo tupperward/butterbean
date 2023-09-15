@@ -12,6 +12,8 @@ from modules.tarot_data import tarotData
 from sqlalchemy import create_engine, table, text
 from sqlalchemy.orm import Session
 
+from github import Github
+
 
 #-----------Buttons!-----------#
 bovontoSchedule = False
@@ -37,7 +39,8 @@ async def on_ready():
     known_commands = await client.tree.sync()
     print('Command tree synced. {0} commands in tree.'.format(len(known_commands)))
 
-
+access_token = os.environ.get('GITHUB_ACCESS_TOKEN')
+repo_name = os.environ.get('GITHUB_REPO_NAME')
 mod_name = os.environ.get('MOD_NAME')
 bot_mod_name = os.environ.get('BOT_MOD_NAME')
 restricted_roles = ['sheriff','admin','Da Hosts','Dr. Wily','technomancer','PatreonBot','bird-expert','time-out-corner','Butterborg']
@@ -262,6 +265,14 @@ async def leave(ctx, old_role: str):
 async def listroles(ctx):
     rolesStr = ', '.join(map(lambda r: str(r), ctx.guild.roles))
     await ctx.send(rolesStr)
+
+#---------------- Create Github Issue ----------------
+
+@client.hybrid_command(brief='Create a ticket in Github', description='Creates a ticket for project tracking in Butterbeans Github repository')
+async def create_ticket(ctx, title: str, body: str):
+    g = Github(access_token)
+    repo = g.get_repo(repo_name)
+    repo.create_issue(title=title, body=body)
 
 #---------------- Tarot functions ----------------
 # single card draw

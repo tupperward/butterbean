@@ -273,6 +273,7 @@ async def create_ticket(ctx, title: str, body: str):
     g = Github(access_token)
     repo = g.get_repo(repo_name)
     repo.create_issue(title=title, body=body)
+    await ctx.send(f'Created ticket named: `{title}`')
 
 #---------------- Tarot functions ----------------
 # single card draw

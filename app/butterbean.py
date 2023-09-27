@@ -209,7 +209,7 @@ async def on_raw_reaction_remove(payload):
 async def on_member_join(member):
     guild = member.guild
     if guild.system_channel is not None:
-        embed = discord.Embed(description=f"{on_member_join.mention}! {greetMessage}")
+        embed = discord.Embed(description=f"{member.mention}! {greetMessage}")
         embed.set_author(name='Timey', icon_url=timeyIcon)
         message = await guild.system_channel.send(embed=embed)
         for emoji in emojis:

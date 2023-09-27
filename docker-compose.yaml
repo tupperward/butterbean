@@ -8,5 +8,5 @@ services:
     env_file: ./app/config/.env
     entrypoint: ["python", "butterbean.py"]
     volumes:
-      - ./app/db/:/app/db/
+      - /docker-volumes/butterbean:/app/db/
     restart: unless-stopped

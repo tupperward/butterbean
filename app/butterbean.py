@@ -241,7 +241,7 @@ async def on_message(message):
 
         updated_content = content.replace(old_domain, new_domain)
 
-        await message.channel.send(f"Hey {message.author.mention}, did you mean to link instead? {updated_content}")
+        await message.channel.send(f"{updated_content}")
 
 
 

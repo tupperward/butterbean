@@ -234,6 +234,8 @@ async def on_message(message):
     if message.author == client.user:
         return
     if old_domain in message.content:
+
+        message.edit(supress=True)
         content = message.content 
 
         updated_content = content.replace(old_domain, new_domain)

@@ -224,6 +224,24 @@ async def welcome(ctx):
     for emoji in emojis:
         await message.add_reaction(emoji)
 
+@client.event
+async def on_message(message):
+    #Hardcoding because I'm bad at my job. 
+    #TODO This should be changed to an array of "banned" domains.
+    old_domain = "https://x.com"
+    new_domain = "https://fixupx.com"
+    #Check if message author is the bot to avoid a loop
+    if message.author == client.user:
+        return
+    if old_domain in message.content:
+        content = message.content 
+
+        updated_content = content.replace(old_domain, new_domain)
+
+        await message.channel.send(f"Hey {message.author.mention}, did you mean to link instead? {updated_content}")
+
+
+
 # ---------------- Sending random messages ----------------
 #Bob Ross quote
 @client.hybrid_command(brief='Quote Bob Ross', description='Sends a Bob Ross quote')

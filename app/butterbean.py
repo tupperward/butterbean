@@ -234,7 +234,9 @@ async def on_message(message):
     if message.author == client.user:
         return
     if old_domain in message.content:
-
+        channel = message.channel
+        old_message = await channel.fetch_message(message.id)
+        await old_message.edit(suppress=True)
         content = message.content 
 
         updated_content = content.replace(old_domain, new_domain)

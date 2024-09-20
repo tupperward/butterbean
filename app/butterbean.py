@@ -108,7 +108,7 @@ async def pickRandomRow(tableName: str, columnName: str) -> str:
 async def createEmbedFromRandomLine(name: str, icon: str, tableName: str, columnName: str) -> str:
     line = await pickRandomRow(tableName, columnName)
     e = discord.Embed(description=line)
-    e.set_author(name=name, icon_url=icon)
+    e.set_author(name=name, icon_regex=icon)
     return e
 
 # ---------------- Meme Management ----------------
@@ -132,11 +132,11 @@ async def bb(ctx, meme: str):
 
 #Mods can add items to the list
 @client.hybrid_command(brief='Add a meme', description='Adds a meme to my necroborgic memories, if you have permission')
-async def add(ctx, name: str, url: str):
+async def add(ctx, name: str, regex: str):
     if await has_role(member=ctx.message.author, role_name=mod_name) or await has_role(member=ctx.message.author, role_name=bot_mod_name):
         with Session(engine) as session:
             session.begin()
-            lookupString = "INSERT INTO posts (post_name, link) VALUES ('{0}','{1}');".format(name, url)
+            lookupString = "INSERT INTO posts (post_name, link) VALUES ('{0}','{1}');".format(name, regex)
             session.execute(text(lookupString))
             session.commit()
             await ctx.send("{} has been added to my necroborgic memories".format(name))
@@ -212,7 +212,7 @@ async def on_member_join(member):
     guild = member.guild
     if guild.system_channel is not None:
         embed = discord.Embed(description=f"{member.mention}! {greetMessage}")
-        embed.set_author(name='Timey', icon_url=timeyIcon)
+        embed.set_author(name='Timey', icon_regex=timeyIcon)
         message = await guild.system_channel.send(embed=embed)
         for emoji in emojis:
             await message.add_reaction(emoji)
@@ -221,7 +221,7 @@ async def on_member_join(member):
 @client.hybrid_command(brief='Resend welcome message', description='Sends my welcome message again, in case a new member missed it')
 async def welcome(ctx):
     embed = discord.Embed(description=f"{greetMessage}")
-    embed.set_author(name='Timey', icon_url=timeyIcon)
+    embed.set_author(name='Timey', icon_regex=timeyIcon)
     message = await ctx.send(embed=embed)
     for emoji in emojis:
         await message.add_reaction(emoji)
@@ -236,17 +236,16 @@ async def on_message(message):
     #Check if message author is the bot to avoid a loop
     if message.author == client.user:
         return
-    new_content = message.content
     for domain in domainList:
         if domain in message.content:
             channel = message.channel
             original_message = await channel.fetch_message(message.id)
             await original_message.edit(suppress=True)
-            url_pattern = re.compile(rf"https?://(?:www\.)?{domain}(.*?)")
-            matches = url_pattern.findall(message.content)
+            regex_pattern = re.compile(rf"https?://(?:www\.)?{domain}(.*?)")
+            matches = regex_pattern.findall(message.content)
             for match in matches:
-                new_content = new_content.replace(match, f"{domains[domain]}{match[1:]}")
-                sleep(1)
+                new_content = matches.replace(match, f"{domains[domain]}{match[1:]}")
+                #sleep(1)
                 await message.channel.send(f"{new_content}")
 
 
@@ -312,10 +311,10 @@ async def tarot(ctx):
         if 'deck' in tarotData:
             card_index = random.randint(0, len(tarotData['deck'])-1)
             card = tarotData['deck'][card_index]
-            emb = discord.Embed(type='rich', title=card['title'], description=card['meaning'], url=card['url'])
+            emb = discord.Embed(type='rich', title=card['title'], description=card['meaning'], regex=card['regex'])
             emb.add_field(name='Keywords', value=', '.join(card['keywords']) )
             emb.add_field(name='Yes/No?', value=card['yesno'])
-            emb.set_image(url=card['image'])
+            emb.set_image(regex=card['image'])
             emb.set_footer(text='Images © Labyrinthos LLC')
             await ctx.send('{0.display_name}, you have drawn: '.format(ctx.message.author), embed=emb)
         else:

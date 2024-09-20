@@ -245,7 +245,7 @@ async def on_message(message):
             matches = url_pattern.findall(message.content)
             for match in matches:
                 new_url = match.replace(match, f"https://{domains[domain]}")
-                await sleep(1)
+                sleep(1)
                 await message.channel.send(f"{new_url}")
 
 

@@ -248,7 +248,6 @@ async def on_message(message):
     if message.author == client.user:
         return
     for domain in domains:
-        member = message.author
         if domain in message.content:
             channel = message.channel
             original_message = await channel.fetch_message(message.id)
@@ -257,9 +256,8 @@ async def on_message(message):
             matches = regex_pattern.findall(message.content)
             for match in matches:
                 new_content = message.content.replace(match[0], f"{domains[domain]}")
-                await rename_to(member)
                 await channel.send(f"{new_content}")
-                client.user = base_user
+
  
 
 

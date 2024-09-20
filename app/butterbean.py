@@ -28,6 +28,7 @@ intents.message_content = True
 
 #-----------Intializing functions-----------#
 client = commands.Bot(command_prefix=('/','!'), description='Butterborg is online.', add=True, intents=intents)
+base_user = client.user
 
 #-----------Intializing ready-----------#   
 @client.event
@@ -110,6 +111,9 @@ async def createEmbedFromRandomLine(name: str, icon: str, tableName: str, column
     e = discord.Embed(description=line)
     e.set_author(name=name, icon_url=icon)
     return e
+
+async def rename_to(member):
+    await client.user.edit(username=member.name, avatar=member.display_avatar)
 
 # ---------------- Meme Management ----------------
 #Message Send with !bb arg
@@ -252,13 +256,11 @@ async def on_message(message):
             regex_pattern = re.compile(rf"https?://(?:www\.)?({domain})(.+)")
             matches = regex_pattern.findall(message.content)
             for match in matches:
-                webhook = await channel.create_webhook(name=member.name)
                 new_content = message.content.replace(match[0], f"{domains[domain]}")
-                embed = discord.Embed(description=f"{new_content}")
-                await webhook.send(embed=embed, avatar_url=member.avatar.url)
-                webhooks = await channel.webhooks()
-                for webhook in webhooks:
-                    await webhook.delete()
+                await rename_to(member)
+                await channel.send(f"{new_content}")
+                client.user = base_user
+ 
 
 
 

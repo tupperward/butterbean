@@ -229,14 +229,11 @@ async def welcome(ctx):
 @client.event
 async def on_message(message):
     #Hardcoding because I'm bad at my job. 
-    #TODO This should be changed to an array of "banned" domains.
-    domainList = ["x.com","instagram.com"]
     domains = {"x.com":"fixupx.com", "instagram.com":"ddinstagram.com"}
-
     #Check if message author is the bot to avoid a loop
     if message.author == client.user:
         return
-    for domain in domainList:
+    for domain in domains:
         if domain in message.content:
             channel = message.channel
             original_message = await channel.fetch_message(message.id)

@@ -2,14 +2,16 @@
 #author: Tupperward
 
 #Importing dependencies
-from importlib.metadata import MetadataPathFinder
-import discord, os , random, asyncio, re
-from discord.ext import commands, tasks
+import discord, os , random, re
+
+from time import sleep
+
+from discord.ext import commands
 from discord.utils import get
 
 from modules.tarot_data import tarotData
 
-from sqlalchemy import create_engine, table, text
+from sqlalchemy import create_engine, text
 from sqlalchemy.orm import Session
 
 from github import Github
@@ -228,20 +230,23 @@ async def welcome(ctx):
 async def on_message(message):
     #Hardcoding because I'm bad at my job. 
     #TODO This should be changed to an array of "banned" domains.
-    old_domain = "https://x.com"
-    new_domain = "https://fixupx.com"
+    domainList = ["x.com","instagram.com"]
+    domains = {"x.com":"fixupx.com", "instagram.com":"ddinstagram.com"}
+
     #Check if message author is the bot to avoid a loop
     if message.author == client.user:
         return
-    if old_domain in message.content:
-        channel = message.channel
-        old_message = await channel.fetch_message(message.id)
-        await old_message.edit(suppress=True)
-        url_pattern = re.compile(rf"https?://(?:www\.)?{old_domain}(?:/[^\s]*)?")
-        matches = url_pattern.findall(message.content)
-        for match in matches:
-            new_url = match.replace(match, f"{new_domain}")
-            await message.channel.send(f"{new_url}")
+    for domain in domainList:
+        if domain in message.content:
+            channel = message.channel
+            original_message = await channel.fetch_message(message.id)
+            await original_message.edit(suppress=True)
+            url_pattern = re.compile(rf"https?://(?:www\.)?{domain}(.*?)")
+            matches = url_pattern.findall(message.content)
+            for match in matches:
+                new_url = match.replace(match, f"https://{domains[domain]}")
+                await sleep(1)
+                await message.channel.send(f"{new_url}")
 
 
 

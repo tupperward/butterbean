@@ -256,12 +256,8 @@ async def on_message(message):
             regex_pattern = re.compile(rf"https?://(?:www\.)?({domain})(.+)")
             matches = regex_pattern.findall(message.content)
             for match in matches:
-                webhook = channel.create_webhook(name=member.name)
                 new_content = message.content.replace(match[0], f"{domains[domain]}")
-                await webhook.send(f"{new_content}", avatar_url=member.display_avatar.url)
-                webhooks = await channel.webhooks()
-                for webhook in webhooks:
-                    await webhook.delete()
+                await channel.send(f"{new_content}")
  
 
 

@@ -236,6 +236,7 @@ async def on_message(message):
     #Check if message author is the bot to avoid a loop
     if message.author == client.user:
         return
+    new_content = message.content
     for domain in domainList:
         if domain in message.content:
             channel = message.channel
@@ -244,9 +245,9 @@ async def on_message(message):
             url_pattern = re.compile(rf"https?://(?:www\.)?{domain}(.*?)")
             matches = url_pattern.findall(message.content)
             for match in matches:
-                new_url = match.replace(match, f"https://{domains[domain]}")
+                new_content = new_content.replace(match, f"{domains[domain]}{match[1:]}")
                 sleep(1)
-                await message.channel.send(f"{new_url}")
+                await message.channel.send(f"{new_content}")
 
 
 

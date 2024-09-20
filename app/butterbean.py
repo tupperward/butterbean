@@ -253,9 +253,7 @@ async def on_message(message):
             matches = regex_pattern.findall(message.content)
             for match in matches:
                 new_content = message.content.replace(match[0], f"{domains[domain]}")
-                embed = discord.Embed(description=f"{new_content}", url=matches[0].replace(match[0], f"{domains[domain]}"))
-                embed.set_author(name=member, icon_url=member.display_avatar)
-                await message.channel.send(embed=embed)
+                await message.channel.send(f"{new_content}")
 
 
 

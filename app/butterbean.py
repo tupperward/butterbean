@@ -108,7 +108,7 @@ async def pickRandomRow(tableName: str, columnName: str) -> str:
 async def createEmbedFromRandomLine(name: str, icon: str, tableName: str, columnName: str) -> str:
     line = await pickRandomRow(tableName, columnName)
     e = discord.Embed(description=line)
-    e.set_author(name=name, icon_regex=icon)
+    e.set_author(name=name, icon_url=icon)
     return e
 
 # ---------------- Meme Management ----------------
@@ -132,11 +132,11 @@ async def bb(ctx, meme: str):
 
 #Mods can add items to the list
 @client.hybrid_command(brief='Add a meme', description='Adds a meme to my necroborgic memories, if you have permission')
-async def add(ctx, name: str, regex: str):
+async def add(ctx, name: str, url: str):
     if await has_role(member=ctx.message.author, role_name=mod_name) or await has_role(member=ctx.message.author, role_name=bot_mod_name):
         with Session(engine) as session:
             session.begin()
-            lookupString = "INSERT INTO posts (post_name, link) VALUES ('{0}','{1}');".format(name, regex)
+            lookupString = "INSERT INTO posts (post_name, link) VALUES ('{0}','{1}');".format(name, url)
             session.execute(text(lookupString))
             session.commit()
             await ctx.send("{} has been added to my necroborgic memories".format(name))
@@ -212,7 +212,7 @@ async def on_member_join(member):
     guild = member.guild
     if guild.system_channel is not None:
         embed = discord.Embed(description=f"{member.mention}! {greetMessage}")
-        embed.set_author(name='Timey', icon_regex=timeyIcon)
+        embed.set_author(name='Timey', icon_url=timeyIcon)
         message = await guild.system_channel.send(embed=embed)
         for emoji in emojis:
             await message.add_reaction(emoji)
@@ -225,13 +225,13 @@ async def welcome(ctx, member=""):
         members = guild.members
         if member in members:
             embed = discord.Embed(description=f"{member.mention}! {greetMessage}")
-            embed.set_author(name='Timey', icon_regex=timeyIcon)
+            embed.set_author(name='Timey', icon_url=timeyIcon)
             message = await ctx.send(embed=embed)
             for emoji in emojis:
                 await message.add_reaction(emoji)
     else:
         embed = discord.Embed(description=f"{greetMessage}")
-        embed.set_author(name='Timey', icon_regex=timeyIcon)
+        embed.set_author(name='Timey', icon_url=timeyIcon)
         message = await ctx.send(embed=embed)
         for emoji in emojis:
             await message.add_reaction(emoji)
@@ -317,10 +317,10 @@ async def tarot(ctx):
         if 'deck' in tarotData:
             card_index = random.randint(0, len(tarotData['deck'])-1)
             card = tarotData['deck'][card_index]
-            emb = discord.Embed(type='rich', title=card['title'], description=card['meaning'], regex=card['regex'])
+            emb = discord.Embed(type='rich', title=card['title'], description=card['meaning'], url=card['url'])
             emb.add_field(name='Keywords', value=', '.join(card['keywords']) )
             emb.add_field(name='Yes/No?', value=card['yesno'])
-            emb.set_image(regex=card['image'])
+            emb.set_image(url=card['image'])
             emb.set_footer(text='Images © Labyrinthos LLC')
             await ctx.send('{0.display_name}, you have drawn: '.format(ctx.message.author), embed=emb)
         else:

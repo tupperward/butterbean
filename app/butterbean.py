@@ -254,7 +254,8 @@ async def on_message(message):
             for match in matches:
                 webhook = await channel.create_webhook(name=member.name)
                 new_content = message.content.replace(match[0], f"{domains[domain]}")
-                await webhook.send(f"{new_content}", avatar_url=member.avatar.url)
+                embed = discord.Embed(description=f"{new_content}")
+                await webhook.send(embed=embed, avatar_url=member.avatar.url)
                 webhooks = await channel.webhooks()
                 for webhook in webhooks:
                     await webhook.delete()

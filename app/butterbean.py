@@ -239,7 +239,7 @@ async def welcome(ctx, member=None):
 @client.event
 async def on_message(message):
     #Hardcoding because I'm bad at my job. 
-    domains = {"x.com":"fixupx.com", "instagram.com":"ddinstagram.com"}
+    domains = {"x.com":"fixupx.com", "instagram.com":"ddinstagram.com", "tiktok.com":"vxtiktok.com"}
     #Check if message author is the bot to avoid a loop
     if message.author == client.user:
         return

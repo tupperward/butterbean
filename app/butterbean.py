@@ -219,12 +219,21 @@ async def on_member_join(member):
 
 #If needed, will resend the welcome message
 @client.hybrid_command(brief='Resend welcome message', description='Sends my welcome message again, in case a new member missed it')
-async def welcome(ctx):
-    embed = discord.Embed(description=f"{greetMessage}")
-    embed.set_author(name='Timey', icon_regex=timeyIcon)
-    message = await ctx.send(embed=embed)
-    for emoji in emojis:
-        await message.add_reaction(emoji)
+async def welcome(ctx, member=""):
+    guild = ctx.guild 
+    members = guild.members
+    if member in members:
+        embed = discord.Embed(description=f"{member.mention}! {greetMessage}")
+        embed.set_author(name='Timey', icon_regex=timeyIcon)
+        message = await ctx.send(embed=embed)
+        for emoji in emojis:
+            await message.add_reaction(emoji)
+    else:
+        embed = discord.Embed(description=f"{greetMessage}")
+        embed.set_author(name='Timey', icon_regex=timeyIcon)
+        message = await ctx.send(embed=embed)
+        for emoji in emojis:
+            await message.add_reaction(emoji)
 
 @client.event
 async def on_message(message):

@@ -2,6 +2,7 @@ version: "3.9"
 services:
   app:
     image: tupperward/butterbean:latest
+    pull: always
     build: ./app/.
     ports:
       - 443

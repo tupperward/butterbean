@@ -219,9 +219,9 @@ async def on_member_join(member):
 
 #If needed, will resend the welcome message
 @client.hybrid_command(brief='Resend welcome message', description='Sends my welcome message again, in case a new member missed it')
-async def welcome(ctx, member=""):
+async def welcome(ctx, member=None):
     if member:
-        guild =  ctx.guild 
+        guild =  member.guild 
         members = guild.members
         if member in members:
             embed = discord.Embed(description=f"{member.mention}! {greetMessage}")

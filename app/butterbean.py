@@ -219,7 +219,7 @@ async def on_member_join(member):
 
 #If needed, will resend the welcome message
 @client.hybrid_command(brief='Resend welcome message', description='Sends my welcome message again, in case a new member missed it')
-async def welcome(ctx, member=None):
+async def welcome(ctx, member: discord.Member=None):
     if member:
         guild =  ctx.guild 
         members = guild.members
@@ -244,15 +244,19 @@ async def on_message(message):
     if message.author == client.user:
         return
     for domain in domains:
+        member = message.author
         if domain in message.content:
             channel = message.channel
             original_message = await channel.fetch_message(message.id)
             await original_message.edit(suppress=True)
             regex_pattern = re.compile(rf"https?://(?:www\.)?({domain})(.+)")
             matches = regex_pattern.findall(message.content)
+            embed = discord.Embed()
+            embed.set_author(name=member, icon_url=member.avatar_url)
             for match in matches:
                 new_content = message.content.replace(match[0], f"{domains[domain]}")
-                await message.channel.send(f"{new_content}")
+                embed.description = f"{new_content}"
+                await message.channel.send(embed=embed)
 
 
 

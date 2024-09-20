@@ -259,7 +259,7 @@ async def on_message(message):
                 new_content = message.content.replace(match[0], f"{domains[domain]}")
                 await rename_to(member)
                 await channel.send(f"{new_content}")
-                await client.user = base_user
+                client.user = base_user
  
 
 

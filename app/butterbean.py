@@ -211,7 +211,7 @@ async def on_raw_reaction_remove(payload):
 async def on_member_join(member):
     guild = member.guild
     if guild.system_channel is not None:
-        embed = discord.Embed(description=f"{member.mention}! {greetMessage}")
+        embed = discord.Embed(description=f"Greetings {member.mention}!\n\n{greetMessage}")
         embed.set_author(name='Timey', icon_url=timeyIcon)
         message = await guild.system_channel.send(embed=embed)
         for emoji in emojis:
@@ -224,7 +224,7 @@ async def welcome(ctx, member: discord.Member=None):
         guild =  ctx.guild 
         members = guild.members
         if member in members:
-            embed = discord.Embed(description=f"{member.mention}! {greetMessage}")
+            embed = discord.Embed(description=f"Greetings {member.mention}!\n\n{greetMessage}")
             embed.set_author(name='Timey', icon_url=timeyIcon)
             message = await ctx.send(embed=embed)
             for emoji in emojis:
@@ -254,7 +254,7 @@ async def on_message(message):
             for match in matches:
                 webhook = channel.create_webhook(name=member.name, avatar=member.display_avatar)
                 new_content = message.content.replace(match[0], f"{domains[domain]}")
-                await webhook.send(content=f"{new_content}")
+                await webhook.send(f"{new_content}")
                 webhooks = await channel.webhooks()
                 for webhook in webhooks:
                     await webhook.delete()

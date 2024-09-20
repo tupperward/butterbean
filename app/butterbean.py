@@ -241,11 +241,10 @@ async def on_message(message):
             channel = message.channel
             original_message = await channel.fetch_message(message.id)
             await original_message.edit(suppress=True)
-            regex_pattern = re.compile(rf"https?://(?:www\.)?{domain}(.*?)")
+            regex_pattern = re.compile(rf"https?://(?:www\.)?({domain})(.+)")
             matches = regex_pattern.findall(message.content)
             for match in matches:
-                new_content = matches.replace(match, f"{domains[domain]}{match[1:]}")
-                #sleep(1)
+                new_content = message.content.replace(match[0], f"{domains[domain]}")
                 await message.channel.send(f"{new_content}")
 
 

@@ -113,7 +113,7 @@ async def createEmbedFromRandomLine(name: str, icon: str, tableName: str, column
     return e
 
 async def rename_to(member):
-    await client.user.edit(username=member.name, avatar=member.display_avatar.replace(format='png'))
+    await client.user.edit(username=member.name, avatar=hash(member.display_avatar))
 
 # ---------------- Meme Management ----------------
 #Message Send with !bb arg

@@ -251,10 +251,10 @@ async def on_message(message):
             await original_message.edit(suppress=True)
             regex_pattern = re.compile(rf"https?://(?:www\.)?({domain})(.+)")
             matches = regex_pattern.findall(message.content)
-            embed = discord.Embed()
-            embed.set_author(name=member, icon_url=member.avatar_url)
             for match in matches:
                 new_content = message.content.replace(match[0], f"{domains[domain]}")
+                embed = discord.Embed()
+                embed.set_author(name=member, icon_url=member.avatar_url)
                 embed.description = f"{new_content}"
                 await message.channel.send(embed=embed)
 

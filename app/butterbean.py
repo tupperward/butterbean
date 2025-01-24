@@ -243,7 +243,7 @@ async def welcome(ctx, member: discord.Member=None):
 @client.event
 async def on_message(message):
     #Hardcoding because I'm bad at my job. 
-    domains = {"x.com":"fixupx.com", "instagram.com":"ddinstagram.com", "tiktok.com":"vxtiktok.com"}
+    domains = ["x.com","fixupx.com","instagram.com","ddinstagram.com"]
     #Check if message author is the bot to avoid a loop
     member = message.author
     if member == client.user:
@@ -252,12 +252,9 @@ async def on_message(message):
         if "https://"+domain in message.content:
             channel = message.channel
             original_message = await channel.fetch_message(message.id)
-            await original_message.edit(suppress=True)
-            regex_pattern = re.compile(rf"https?://(?:www\.)?({domain})(.+)")
-            matches = regex_pattern.findall(message.content)
-            for match in matches:
-                new_content = message.content.replace(match[0], f"{domains[domain]}")
-                await channel.send(f"{new_content}")
+            await original_message.edit(suppress=True, delete_after=5)
+            ban_message = "Linking to this website has banned by the users of this discord server."
+            await channel.send(ban_message)
  
 
 

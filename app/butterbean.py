@@ -249,7 +249,7 @@ async def on_message(message):
     if member == client.user:
         return
     for domain in domains:
-        if "https://"+domain in message.content:
+        if "https://"+domain in message.content or "https://www."+domain in message.content:
             channel = message.channel
             original_message = await channel.fetch_message(message.id)
             await original_message.edit(suppress=True, delete_after=1)

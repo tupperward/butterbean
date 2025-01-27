@@ -6,6 +6,7 @@ import discord, os , random
 
 from discord.ext import commands
 from discord.utils import get
+from discord import Permissions
 
 from modules.tarot_data import tarotData
 
@@ -23,7 +24,6 @@ intents = discord.Intents.default()
 intents.messages = True
 intents.members = True
 intents.message_content = True
-intents.manage_messages = True  
 
 #-----------Intializing functions-----------#
 client = commands.Bot(command_prefix=('/','!'), description='Butterborg is online.', add=True, intents=intents)
@@ -240,6 +240,7 @@ async def welcome(ctx, member: discord.Member=None):
             await message.add_reaction(emoji)
 
 @client.event
+@commands.has_permissions(manage_messages=True)
 async def on_message(message):
     #Hardcoding because I'm bad at my job. 
     domains = ["x.com","fixupx.com","instagram.com","ddinstagram.com", "facebook.com"]

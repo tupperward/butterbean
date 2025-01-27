@@ -253,8 +253,8 @@ async def on_message(message):
             channel = message.channel
             original_message = await channel.fetch_message(message.id)
             await original_message.edit(suppress=True, delete_after=1)
-            ban_message = f"Linking to {domain} has banned by the users of this discord server."
-            await channel.send(ban_message)
+            ban_message = f"Linking to {domain} has banned by the users of this discord server. Your message will be automatically deleted to prevent traffic from reaching {domain}"
+            await channel.reply(ban_message)
 
 
 # ---------------- Sending random messages ----------------

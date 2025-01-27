@@ -22,7 +22,8 @@ bovontoSchedule = False
 intents = discord.Intents.default()
 intents.messages = True
 intents.members = True
-intents.message_content = True  
+intents.message_content = True
+intents.manage_messages = True  
 
 #-----------Intializing functions-----------#
 client = commands.Bot(command_prefix=('/','!'), description='Butterborg is online.', add=True, intents=intents)
@@ -250,11 +251,9 @@ async def on_message(message):
         if "https://"+domain in message.content:
             channel = message.channel
             original_message = await channel.fetch_message(message.id)
-            await original_message.edit(suppress=True, delete_after=5)
+            await original_message.edit(suppress=True, delete_after=1)
             ban_message = "Linking to this website has banned by the users of this discord server."
             await channel.send(ban_message)
- 
-
 
 
 # ---------------- Sending random messages ----------------

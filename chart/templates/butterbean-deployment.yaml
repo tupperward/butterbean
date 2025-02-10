@@ -53,6 +53,7 @@ spec:
                   key: TOKEN
                   name: butterbean
           image: tupperward/butterbean:latest
+          imagePullPolicy: Always
           name: butterbean
           ports:
             - containerPort: 443

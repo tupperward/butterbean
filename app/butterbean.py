@@ -243,7 +243,7 @@ async def welcome(ctx, member: discord.Member=None):
 @commands.has_permissions(manage_messages=True)
 async def on_message(message):
     #Hardcoding because I'm bad at my job. 
-    domains = ["x.com","fixupx.com","instagram.com","ddinstagram.com", "facebook.com", "twitter.com", "threads.com", "threads.net", "instagramez.com"]
+    domains = ["x.com","fixupx.com","instagram.com","ddinstagram.com", "facebook.com", "twitter.com", "threads.com", "threads.net", "instagramez.com", "girlcockx.com"]
     #Check if message author is the bot to avoid a loop
     member = message.author
     if member == client.user:
